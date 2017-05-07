@@ -1,0 +1,299 @@
+\documentclass[12pt,twocolumn]{article}
+
+% Page dimensions
+\setlength{\hoffset}{-0.4in}
+\setlength{\voffset}{-0.5in}
+%\setlength{\headsep}{-0.2in}
+
+\setlength{\oddsidemargin}{0in}
+\setlength{\textwidth}{7.4in}
+\setlength{\textheight}{8.5in}
+
+\setlength{\columnsep}{0.3in}
+
+% Packages
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{abstract}
+\usepackage{amsmath, amssymb} 
+\usepackage{epsfig}
+\usepackage{subcaption} 
+\usepackage[english]{alg}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{empheq}
+\usepackage[hidelinks]{hyperref}
+\usepackage{sectsty}
+
+% Packages for notes, testing, etc.
+\usepackage{todonotes}
+\usepackage{blindtext}
+
+%% ============================================================
+
+% Macros
+\newcommand{\CHRONO}{{\sffamily{{Chrono}}}}
+\newcommand{\ChronoFEA}{{\sffamily{Chrono}}::FEA}
+\newcommand{\ChronoVehicle}{{\sffamily{Chrono}}::Vehicle}
+\newcommand{\ChronoFSI}{{\sffamily{Chrono}}::FSI}
+\newcommand{\ChronoGranular}{{\sffamily{Chrono}}::Granular}
+\newcommand{\ChronoParallel}{{\sffamily{Chrono}}::Parallel}
+\newcommand{\ChronoDistributed}{{\sffamily{Chrono}}::Distributed}
+\newcommand{\ChronoOpenGL}{{\sffamily{Chrono}}::OpenGL}
+
+%% ============================================================
+
+% Styles
+
+\definecolor{my-gray}{gray}{0.4}
+
+% First page header
+\fancypagestyle{firststyle} {
+	\lhead{}
+	\rhead{
+	\footnotesize
+	\textbf{2017 NDIA GROUND VEHICLE SYSTEMS ENGINEERING AND TECHNOLOGY SYMPOSIUM}\\
+	\textbf{\sc Modeling \& Simulation, Testing and Validation (MSTV) Technical Session}\\
+	\textbf{\sc August 8-10, 2017 -- Novi, Michigan}	
+	}
+	\chead{}
+	%
+	\lfoot{}
+	\cfoot{}
+	\rfoot{}
+}
+
+% All other pages (header and footer)
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{
+	\color{my-gray}
+	\footnotesize Proceedings of the 2017 Ground Vehicle Systems Engineering and Technology Symposium (GVSETS)
+	}
+\cfoot{
+	\color{my-gray}
+	\footnotesize
+	{\FooterTitle}\\
+	Page \thepage~of~\pageref{LastPage}
+}
+
+\renewcommand{\headrulewidth}{0pt}
+
+% Font and styles for sections
+\allsectionsfont{\fontsize{12}{15}\selectfont}
+
+\renewcommand{\abstractname}{ABSTRACT}
+\renewcommand{\refname}{REFERENCES}
+
+%% ============================================================
+
+\title{\bf\large PERFORMANCE ANALYSIS OF CONSTANT SPEED LOCAL OBSTACLE AVOIDANCE CONTROLLER USING AN MPC ALGORITHM ON GRANULAR TERRAIN}
+
+\newcommand{\FooterTitle}{Performance Analysis of obstacle avoidance algorithm on granular terrain}
+
+\author{
+	{\bf Nicholas Haraus}\\
+	Dept. of Mechanical Engineering\\
+	Marquette University\\
+	Milwaukee, WI
+	\and
+	{\bf Radu Serban, PhD}\\
+	Dept. of Mechanical Engineering\\
+	University of Wisconsin - Madison\\
+	Madison, WI
+	\and
+	{\bf Jonathan A. Fleischmann, PhD}\\
+	Dept. of Mechanical Engineering\\
+	Marquette University\\
+	Milwaukee, WI
+}
+
+\newcommand{\MyAbstract}{
+	A Model Predictive Control (MPC) Algorithm was used by Liu, Ersal, Stein, and Jayakumar to develop a LIDAR-based constant speed local obstacle avoidance controller for autonomous ground vehicles. 
+	Provided LIDAR data as well as a target location, a vehicle can route itself around obstacles as it encounters them and arrive at an end goal via an optimal route.
+	Using Chrono Parallel, a multibody physics API, this controller has been tested on a complex multibody physics HMMWV model to perform higher fidelity testing in more situations than previously accomplished. 
+	For this research, the LIDAR-based constant speed local obstacle avoidance controller from~\cite{foo} has been implemented and tested on rigid flat terrain and granular terrain to examine the robustness of this control method. A novel simulation framework has been developed to efficiently simulate granular terrain for this application.
+}
+
+%% ============================================================
+
+\begin{document}
+\date{}
+
+% Remove (comment) this block for final version
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{0}
+
+% ------------------------------------------
+
+\twocolumn[
+\maketitle             % full width title
+\thispagestyle{firststyle}
+\begin{onecolabstract} % ditto abstract
+\MyAbstract
+\\\vspace{0.2in}
+\end{onecolabstract}
+]
+
+%% ============================================================
+
+\section{INTRODUCTION}\label{s:introduction}
+\todo[inline]{\color{red}{0.5 pages}}
+
+Obstacle avoidance is a crucial capability for Autonomous Ground Vehicles (AGV’s) of the future. This refers to a ground vehicle’s ability to sense its surrounding environment, develop an optimal path around the obstacles in the environment, generate optimal control commands to satisfy that path, and physically navigate the vehicle around the obstacles safely and to a desired endpoint. Safety is defined as avoiding collisions as well as enforcing limitations on excessive sideslip or tire lift-off. An ideal control algorithm is one that is capable of pushing a vehicle to its performance limits by using knowledge of its dynamic capabilities and surrounding environmental conditions while still enforcing the strict safety requirements. Though previous work has been accomplished testing a Model Predictive Control (MPC) algorithm for obstacle avoidance on wheeled vehicles, more work is required to test the fidelity of this algorithm and determine where improvements are needed. One area in which this algorithm has yet to be tested is its ability to control a wheeled vehicle on granular terrain. Up to this point, the assumption that the terrain is rigid and flat for testing has been used. However, when rigid flat terrain is replaced with granular terrain, such as soil or sand, how does the MPC algorithm perform?  Do the current most commonly used vehicle models perform successfully with the MPC algorithm on granular terrain? The proposed research upon previous published research to evaluate the robustness and validity of the MPC algorithm with different vehicle models in an environment more similar to what an off-road military vehicle would experience in combat. This testing is done via numerical simulation.
+
+The goal of this paper is to present the results of this study to understand how model fidelity of the controller model affects overall performance of the obstacle avoidance controller. Certain challenges are introduced when attempting to simulate a vehicle on granular terrain: Specifically, how does the user efficiently allow the vehicle to drive everywhere without creating billions of particles scattered across the entire terrain? This challenge has been addressed by employing a novel simulation framework for granular terrain developed by the authors. The study has the following three objectives:
+\begin{enumerate}
+\item
+Study and compare the performance of the MPC Controller on granular terrain compared to rigid flat terrain.
+\item
+Analyze the role of model fidelity of the internal controller model and how it affects the speed and performance of the obstacle avoidance controller.
+\item
+Showcase the potential of controller testing in a high fidelity virtual test environment with Chrono to assist with initial control algorithm development before physical implementation for vehicular applications.
+\end{enumerate}
+
+The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide...
+
+%% ============================================================
+
+\section{BACKGROUND}\label{s:background}
+
+\subsection{MPC Based Local Obstacle Avoidance }\label{ss:MPC}
+The concept of MPC is to use an internal model of the system one desires to control to predict and optimize future system behavior from the current system state and inputs. The system behavior is predicted over some defined finite time horizon and the optimal control sequence over the prediction horizon is output. The control sequence is executed for an execution time smaller than the prediction horizon, and the whole process is repeated. The repetition of this process over time creates a feedback loop which continually controls the system, pushing it towards an optimal path.
+
+For this study, the system to be controlled is an AGV. Consider an AGV located in a level environment without roads or any other structures to guide the AGV’s motion. The AGV also has a known global target position. Between the target position and the current vehicle position there may or may not be obstacles of unknown size. Using the MPC formulation outlined in~\cite{fix_me}, the vehicle can navigate from the current position to the provided target position while avoiding obstacles as they are encountered. Obstacle information is assumed to be unknown a priori and only obtained through a planar LIDAR sensor. The MPC schematic is presented in Fig.~\ref{fig:MPC_schematic}.
+%
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Schematic of MPC LIDAR-Based Constant Speed Local Obstacle Avoidance Controller.  \todo[inline]{adjust sizing of schematic text}}    
+	\label{fig:MPC_schematic}
+\end{figure}
+
+The planar LIDAR sensor is mounted at the front center location of the vehicle. The LIDAR sensor returns the closest obstacle boundary in all radial directions of the sensor at an angular resolution ε. The LIDAR sensor has a maximum range past which it cannot sense any obstacles. Therefore, if the closest obstacle boundary is greater than the LIDAR radius $R_{LIDAR}$ then the sensor returns $R_{LIDAR}$. The LIDAR sensor range is [0$^o$,180$^o$] with 90$^o$ being the vehicle heading direction. Since for this study the AGV is driving along level ground, whether granular or rigid, the planar LIDAR sensor is sufficient. The LIDAR is assumed to have no delay and zero noise. Therefore, the LIDAR sensor can instantaneously generate a safe area polygon assembled from the returned points from the LIDAR. An overhead view of the AGV encountering an obstacle and the generated LIDAR safe area polygon are presented in Fig.~\ref{fig:obstacle_field}. 
+%
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Sample obstacle field and LIDAR output.}    
+	\label{fig:obstacle_field}
+\end{figure}
+	
+The outputs of the MPC algorithm are the steering signals only for this simulation. From Fig.~\ref{fig:MPC_schematic}, the MPC algorithm is made up of the internal controller vehicle model, the cost function and constraints, and the dynamic optimizer. The internal controller vehicle model predicts the future states of the AGV for a given steering sequence and is of interest in this work. For this study, the internal controller vehicle model is varied from test to test between a 2-DOF vehicle model and a 14-DOF vehicle model, detailed in further sections. The cost functions and constraints are used to formulate the optimal control problem with the equations from the vehicle model. The dynamic optimizer then solves the optimal control problem. For the purpose of this paper, exhaustive search is used to find the optimal solution to the problem since solution speed is not a primary focus of this paper, but more importantly the ability to find and execute an optimal solution.
+
+The same controller as formulated in~\cite{fix_me} is used for this study. The cost function and constraints need to be specified to avoid collisions with obstacles and guarantee vehicle dynamical safety. The optimal control problem solved at each MPC time step is comprised of the following set of equations:
+\todo[inline]{Add equation here}
+
+%% ============================================================
+	
+\section{SOME EXAMPLES}
+
+Here (see Eq.~\ref{e:sample}) is a sample equation:
+%
+\begin{equation}\label{e:sample}
+\begin{array}{rcl}
+F_n &=& \sqrt{\bar{R} \delta_n} \left( K_n \delta_n - C_n \bar{m} v_n \right) \\
+{\bf F}_t &=& \sqrt{\bar{R} \delta_n} \left( -K_t \boldsymbol{\delta}_t - C_t \bar{m} {\bf v}_t \right) \,.
+\end{array}
+\end{equation}
+
+Here is an example of a simple table (which fits in a column); see Table~\ref{t:one_col}.
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c c c c||} 
+		\hline
+		Col1 & Col2 & Col2 & Col3 \\ [0.5ex] 
+		\hline\hline
+		1 & 6 & 87837 & 787 \\ 
+		\hline
+		2 & 7 & 78 & 5415 \\
+		\hline
+		3 & 545 & 778 & 7507 \\
+		\hline
+		4 & 545 & 18744 & 7560 \\
+		\hline
+		5 & 88 & 788 & 6344 \\ [1ex] 
+		\hline
+	\end{tabular}
+\end{center}
+\caption{A long caption for a table that fits inside a single column.}
+\label{t:one_col}
+\end{table}
+
+Here is a figure that spans both columns (Fig.~\ref{fig:two_cols}).  You must use the {\tt figure*} environment.  This also works for tables (use {\tt table*}); see Table~\ref{t:two_cols}.
+\begin{figure*}
+	\centering
+	\includegraphics[width=0.6\textwidth]{Figs/no-image.png}
+	\caption{{\small This is the caption for a figure that spans both columns}}    
+	\label{fig:two_cols}
+\end{figure*}
+
+\begin{table*}
+	\centering
+\begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
+	\hline
+	\multicolumn{4}{|c|}{Country List} \\
+	\hline
+	Country Name     or Area Name& ISO ALPHA 2 Code &ISO ALPHA 3 Code&ISO numeric Code\\
+	\hline
+	Afghanistan   & AF    &AFG&   004\\
+	Aland Islands&   AX  & ALA   &248\\
+	Albania &AL & ALB&  008\\
+	Algeria    &DZ & DZA&  012\\
+	American Samoa&   AS  & ASM&016\\
+	Andorra& AD  & AND   &020\\
+	Angola& AO  & AGO&024\\
+	\hline
+\end{tabular}
+\caption{Caption of a table spanning two columns}
+\label{t:two_cols}
+\end{table*}
+
+Here we cite a paper~\cite{fleischmannetalJCND2015}.
+
+Here (see Fig.~\ref{fig:subfigs}) is an example of two sub-figures; the first one is Fig.~\ref{fig:subfig1}.
+%
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.48\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Figs/no-image.png}
+		\caption{{\small First one...}}    
+		\label{fig:subfig1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.48\textwidth}  
+		\centering 
+		\includegraphics[width=\textwidth]{Figs/no-image.png}
+		\caption{{\small Second one...}}
+		\label{fig:subfig2}
+	\end{subfigure}
+	\caption{{\small Some common caption here...}}
+	\label{fig:subfigs}
+\end{figure}
+
+%% ============================================================
+
+\section{SOME OTHER SECTION}
+
+\Blindtext
+
+%% ============================================================
+
+\section*{Acknowledgments}
+Support for this research...
+
+%% ============================================================
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+%% ============================================================
+
+
+
+\end{document}
+
+
+
