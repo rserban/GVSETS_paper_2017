@@ -153,7 +153,7 @@ Analyze the role of model fidelity of the internal controller model and how it a
 Showcase the potential of controller testing in a high fidelity virtual test environment with Chrono to assist with initial control algorithm development before physical implementation for vehicular applications.
 \end{enumerate}
 
-The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide...
+The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide an overviews of the MPC based local obstacle avoidance algorithm, Chrono Multibody Physics API used as the test environment, the method of simulating granular terrain in this study, the two DOF analytical vehicle model, and the fourteen DOF analytical vehicle models used in the controller for this study. In Section~\ref({:Methodology} we describe the driven HMMWV multibody physics model in Chrono used for testing in this study, our developed method for simulating a vehicle driving on granular terrain over large distances, a description of the test cases run for this study, and a summary of the evaluation metrics used to compare one test case to another to determine which performed best. In Section~\ref{s:results} we presents the results of the tests outlined in the previous section as well as perform appropriate comparisons of the tests when the internal controller vehicle model is varied and when the terrain is changed from rigid to granular. Section~\ref{s:conclusion} wraps up the paper and presents potential future work based on the results of this study.
 
 %% ============================================================
 
@@ -180,13 +180,229 @@ The planar LIDAR sensor is mounted at the front center location of the vehicle. 
 	\label{fig:obstacle_field}
 \end{figure}
 	
-The outputs of the MPC algorithm are the steering signals only for this simulation. From Fig.~\ref{fig:MPC_schematic}, the MPC algorithm is made up of the internal controller vehicle model, the cost function and constraints, and the dynamic optimizer. The internal controller vehicle model predicts the future states of the AGV for a given steering sequence and is of interest in this work. For this study, the internal controller vehicle model is varied from test to test between a 2-DOF vehicle model and a 14-DOF vehicle model, detailed in further sections. The cost functions and constraints are used to formulate the optimal control problem with the equations from the vehicle model. The dynamic optimizer then solves the optimal control problem. For the purpose of this paper, exhaustive search is used to find the optimal solution to the problem since solution speed is not a primary focus of this paper, but more importantly the ability to find and execute an optimal solution.
+The outputs of the MPC algorithm are the steering signals only for this simulation. From Figure~\ref{fig:MPC_schematic}, the MPC algorithm is made up of the internal controller vehicle model, the cost function and constraints, and the dynamic optimizer. The internal controller vehicle model predicts the future states of the AGV for a given steering sequence and is of interest in this work. For this study, the internal controller vehicle model is varied from test to test between a 2-DOF vehicle model and a 14-DOF vehicle model, detailed in further sections. The cost functions and constraints are used to formulate the optimal control problem with the equations from the vehicle model. The dynamic optimizer then solves the optimal control problem. For the purpose of this paper, exhaustive search is used to find the optimal solution to the problem since solution speed is not a primary focus of this paper, but more importantly the ability to find and execute an optimal solution.
 
 The same controller as formulated in~\cite{fix_me} is used for this study. The cost function and constraints need to be specified to avoid collisions with obstacles and guarantee vehicle dynamical safety. The optimal control problem solved at each MPC time step is comprised of the following set of equations:
-\todo[inline]{Add equation here}
+
+\begin{equation}\label{e:MPCCost}
+J = s_T + wd 
+\end{equation}
+\begin{equation}\label{e:State_ODE}
+\dot{\xi} = v\left[\xi\left(t\right),\zeta\left(t\right)\right] 
+\end{equation}
+\begin{equation}\label{e:InitialStates}
+\xi\left(0\right) = \xi_0 
+\end{equation}
+\begin{equation}\label{e:SafeArea}
+\tilde{S}\left[x\left(t\right),y\left(t\right)\right] \leq0  
+\end{equation}
+\begin{equation}\label{e:SteerLimit}
+\left|\delta_f\left(t\right)\right| \leq\tilde{\delta}_{f,max}\left(U_0\right) 
+\end{equation}
+\begin{equation}\label{e:SteerRateLimit}
+\left|\varsigma_f\left(t\right)\right| \leq\varsigma_{f,max} 
+\end{equation}
+\begin{equation}\label{e:TimeDomain}
+t \in \left[0,T_P\right]
+\end{equation}
+
+Equation(~\ref{e:MPCCost}) defines the cost function for this optimal control problem. This equation is a soft requirement which defines how the separate path possibilities are weighed against each other and how to determine which path is actually optimal. The cost function is comprised of two terms defined by the following
+
+\begin{equation}\label{e:DistanceCost}
+s_T = \sqrt{\left[ x_G - x\left(T_P\right)\right]^2 + \left[y_G - y\left(T_P\right)\right]^2 }
+\end{equation}
+\begin{equation}\label{e:TurningCost}
+d = \int \limits_0^{T_G} \left|\varsigma\left(t\right)\right| dt 
+\end{equation}
+
+$s_{T}$ seeks to minimize the distance between the prediction end location and the target position. Refer to \todo{Figure XX} for a visualization of this magnitude. A prediction path that predicts the vehicle at the closest location to the target will have the smaller $s_{T}$ term. The second term $d$ aims to minimize the change in steering angle so that smoother, straighter paths are more favorable than windy paths.
+
+Equations (~\ref{e:State_ODE}-~\ref{e:TimeDomain}) are the constraint equations for this optimal control problem which represent hard requirements for vehicle safety and avoiding collisions. Any paths that violate these constraints are not considered safe paths and are eliminated as potential options in this prediction window. Equation (~\ref{e:State_ODE}) defines a set of differential equations that describe the internal controller vehicle model. These equations are presented further in the paper or left for formulation in references. Equation (~\ref{e:InitialStates}) presents the initial states needed to solve Equation (~\ref{e:State_ODE}) for potential paths. 
+
+Equation (~\ref{e:SafeArea}) defines a safe area polygon. All points along paths found from Equations (~\ref{e:State_ODE} - ~\ref{e:InitialStates}) must fall inside of this safe area polygon. This safe area is constructed from LIDAR points. An additional safety buffer is added to account for vehicle size and prevent corners of the vehicle from colliding with an obstacle. 
+
+Equation (~\ref{e:SteerLimit}) imposes a limit on maximum steering angle for the vehicle based on vehicle speed. This value is obtained from a lookup table which can be generated either experimentally or from simulation. Equation (~\ref{e:SteerRateLimit}) imposes a maximum limit on steering rate. Equation (~\ref{e:TimeDomain}) defines the time limits over which this optimal control problem is solved.
 
 %% ============================================================
-	
+
+\subsection{Chrono: Multibody Physics API }\label{ss:Chrono}
+
+%% ============================================================
+
+\subsection{Granular Mechanics }\label{ss:GranMech}
+
+%% ============================================================
+
+\subsection{Non-Rotating Particles}\label{ss:NonRot}
+
+%% ============================================================
+
+\subsection{Internal Controller Vehicle Models}\label{ss:IntModel}
+
+%% ============================================================
+
+\subsection{Two DOF Vehicle Model}\label{ss:2DOFModel}
+The standard vehicle model used in newly developed MPC obstacle avoidance algorithms such as [1] is the 2DOF vehicle model. These models normally either assume constant cornering stiffness or the nonlinear Pacejka Magic Formula Tire Model [17] to predict the ground tire interaction forces. For this study and due to the availability of experimental data, the Pacejka Magic Formula is used to predict tire forces in the vehicle models. This is outlined in the Pacejka Magic Formula section.  
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Two DOF Vehicle Model}  
+	\label{fig:2DOF}
+\end{figure}
+
+A visual representation of the 2DOF model can be found in Figure~\ref{f:TestMatrix}. The two DOF model is described by the following first-order ordinary differential equations.
+
+\begin{equation}\label{e:2DOF_Vdot}
+\dot{V} = \left(F_{y,f} + F_{y,r}\right)/{M - U_0r} 
+\end{equation}
+\begin{equation}\label{e:2DOF_rdot}
+\dot{r} = \left(F_{y,f} - F_{y,r}\right)/I_{zz}
+\end{equation}
+\begin{equation}\label{e:2DOF_psidot}
+\dot{\psi} = r 
+\end{equation}
+\begin{equation}\label{e:2DOF_xdot}
+\dot{x} = U_0\cos{\psi}-\left(V+L_fr\right)\sin{\psi}
+\end{equation}
+\begin{equation}\label{e:2DOF_ydot}
+\dot{y} = U_0\sin{\psi}+\left(V+L_fr\right)\cos{\psi}
+\end{equation}
+
+$F_{y,f}$ and $F_{y,r}$ are the lateral tire forces at the front and rear axles. $U_0$ and $V$ are the longitudinal speed and lateral speed of the vehicle in the vehicle’s coordinate frame. $\psi$ is the yaw angle and $r$ is the yaw rate. $\left(x,y\right)$ represent the front center location of the vehicle expressed in global coordinates. $M$ is vehicle mass, $I_{zz}$ is the moment of inertia of the vehicle, $L_f$ is the distance from the front axle to the vehicle CoG, and $L_r$ is the distance from the rear axle to the vehicle CoG.
+\todo[inline]{ Add more here }
+
+
+
+%% ============================================================
+
+\subsection{Fourteen DOF Vehicle Model}\label{ss:14DOFModel}
+A fourteen DOF model is often used in studies such as these to test the obstacle avoidance controller with a higher fidelity vehicle model [2-3]. A benefit of using the fourteen DOF in the controller is the model’s ability to predict tire liftoff and account for dynamic effects from suspension systems. For this paper then it is appropriate to also compare performance of the local obstacle avoidance controller running an internal fourteen DOF on rigid terrain versus granular terrain.  
+
+The fourteen DOF vehicle model consists of one sprung mass connected above four unsprung masses [16]. A visual representation of the fourteen DOF vehicle model can be found in Figure(~\ref{fig:14DOF}). The sprung mass is allowed to roll, pitch, and yaw while also displacing laterally, vertically, and longitudinally. This sprung mass contributes six DOF to the model. Each of the four wheels are allowed to bounce vertically and rotate about the wheel horizontal axis. The front two wheels are also free to steer. Each wheel then contributes two DOF to the fourteen DOF model. The equations used for this model as well as their developments can be found in [16].
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Fourteen DOF Vehicle Model}  
+	\label{fig:14DOF}
+\end{figure}
+
+The Pacejka Magic Formula is used to calculate the ground tire interaction forces in the fourteen DOF vehicle model. On rigid terrain, this is an accurate and valid assumption. However, based on how the Pacejka Magic Formula is derived and coefficients experimentally obtained, using the Magic Formula to estimate tire forces on granular terrain is not a valid assumption. However, this estimation may provide tire forces that are close enough to still allow the vehicle to successfully navigate the obstacle field safely. 
+\todo[inline]{ finish this paragraph}
+\todo[inline] {Add 14DOF vehicle model figure}
+
+%% ============================================================
+% -----> Consider Removing this Section
+
+%\subsection{Pacejka Magic Formula}\label{ss:Pacejka}
+%The Pacejka Magic Formula is used to predict the ground tire interactions in both the two DOF and fourteen DOF vehicle models. The force and moment from combined slip are calculated and input to the fourteen DOF model. The lateral force in the pure lateral slip condition is input to the two DOF model in Equations (1-2). The Pacejka Magic Formula equations have been omitted here but can be found in [17].
+
+%The Magic Formula models steady state and transient tire behaviors on smooth surfaces [17]. This is a valid assumption and proper use of the Magic Formula for the rigid terrain simulations. However, the Pacejka Magic Formula was not developed for implementation on granular terrain. Certain parameters of the ground tire interaction become much more difficult to calculate such as slip angle and tire deformation on granular terrain. This study recognizes a discrepancy between the utilized Magic Formula for this research and the actual ground interaction forces between the granular terrain and the tire. However, this research seeks to identify how robust a two DOF and fourteen DOF MPC LIDAR based local obstacle avoidance controller is as the terrain shifts from rigid ground to granular. There is potential that the Magic Formula gets close enough to estimating tire forces that the vehicle can still successfully navigate through an obstacle field. There is also a much stronger potential the simulations on granular terrain will perform unfavorably or fail altogether, leading to future development of an improved vehicle model that better models vehicle behavior on granular terrain simply. This discrepancy is noted and considered when analyzing the results of this study
+
+%% ============================================================
+
+\section{TECHNICAL APPROACH / METHODOLOGY}\label{s:methodology}
+
+\subsection{Chrono HMMWV Full Model to be Controlled }\label{ss:MPC}
+
+%% ============================================================
+
+\subsection{Relocating Granular Patch }\label{ss:Patch}
+
+%% ============================================================
+
+\subsection{Open Loop Comparisons }\label{ss:OpenLoop}
+
+%% ============================================================
+
+\subsection{Evaluation Metrics}\label{ss:Metrics}
+
+%% ============================================================
+
+\subsection{Experiment Setup }\label{ss:Setup}
+Simulations on both rigid terrain and granular terrain will be compared to understand how the controller performs on non-ideal surfaces.  The two internal controller vehicle models to be studied in these tests are the previously described two DOF and fourteen DOF vehicle models. Aside from changing the internal controller vehicle model from study to study, the rest of the controller will remain the same. Referring to Table~\ref{t:TestMatrix}, Tests 1 and 2 will be compared to understand how model fidelity influences controller performance on rigid flat terrain. Tests 3 and 4 will be compared to again understand the role of model fidelity in the MPC controller on granular terrain. Tests 1 and 3 will be compared to understand how the same controller performs differently on granular terrain as opposed to rigid flat terrain. Similar comparisons will be made between Tests 2 and 4. Each of the tests will consist of one run on two different obstacle fields created to target the controller’s ability to navigate the vehicle through certain obstacle combinations.
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c c c||} 
+		\hline
+		Test  & Terrain  & Controller Vehicle \\
+		Number &  Type & Model\\ [0.5ex] 	
+		\hline\hline
+		1 & Rigid & 2DOF \\ 
+		\hline
+		2 & Rigid & 14DOF \\
+		\hline
+		3 & Granular & 2DOF \\
+		\hline
+		4 & Granular & 14DOF \\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Individual Simulation Test Information}
+\label{t:TestMatrix}
+\end{table}
+
+For this paper two obstacle fields were generated. The first contains one large circular obstacle located along the initial heading of the vehicle. The target position is located a large distance then behind the single obstacle. Figure~\ref{f:Obst1} presents this obstacle field. The goal of this test is to analyze the performance of the vehicle and controller around a single obstacle. 
+
+The second obstacle field contains four circular obstacles of varying sizes placed in the vehicle’s initial heading direction. The performance of the vehicle on this obstacle field should allow for understanding of how the controller and vehicle navigate around multiple obstacles in a more realistic scenario. Refer to Figure~\ref{f:Obst2}.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Obstacle Field 1}  
+	\label{fig:Obst1}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Obstacle Field 2}   
+	\label{fig:Obst2}
+\end{figure}
+
+%% ============================================================
+
+\section{SIMULATION RESULTS}\label{s:results}
+
+\subsection{Test 1 Results}\label{ss:Test1}
+
+%% ============================================================
+
+\subsection{Test 2 Results}\label{ss:Test2}
+
+%% ============================================================
+
+\subsection{Test 3 Results}\label{ss:Test3}
+
+%% ============================================================
+
+\subsection{Test 4 Results}\label{ss:Test4}
+
+%% ============================================================
+
+\subsection{Comparison of 2DOF vs. 14DOF Controller on Rigid Terrain }\label{ss:Comp1}
+
+%% ============================================================
+
+\subsection{Comparison of 2DOF vs. 14DOF Controller on Granular Terrain }\label{ss:Comp2}
+
+%% ============================================================
+
+\subsection{Comparison of 2DOF Controller on Rigid Terrain vs. Granular Terrain}\label{ss:Comp3}
+
+%% ============================================================
+
+\subsection{Comparison of 14DOF Controller on Rigid Terrain vs. Granular Terrain }\label{ss:Comp4}
+
+
+%% ============================================================
+
+\section{CONCLUSION	}\label{s:conclusion}
+
+
+%%============================================================	
 \section{SOME EXAMPLES}
 
 Here (see Eq.~\ref{e:sample}) is a sample equation:
