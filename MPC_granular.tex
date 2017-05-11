@@ -21,7 +21,8 @@
 \usepackage[english]{alg}
 \usepackage[usenames,dvipsnames]{color}
 \usepackage{empheq}
-\usepackage[hidelinks]{hyperref}
+%\usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
 \usepackage{sectsty}
 
 % Packages for notes, testing, etc.
@@ -113,7 +114,7 @@
 \newcommand{\MyAbstract}{
 	A Model Predictive Control (MPC) Algorithm was used by Liu, Ersal, Stein, and Jayakumar to develop a LIDAR-based constant speed local obstacle avoidance controller for autonomous ground vehicles. 
 	Provided LIDAR data as well as a target location, a vehicle can route itself around obstacles as it encounters them and arrive at an end goal via an optimal route.
-	Using Chrono Parallel, a multibody physics API, this controller has been tested on a complex multibody physics HMMWV model to perform higher fidelity testing in more situations than previously accomplished. 
+	Using {\CHRONO}, a multibody physics API, this controller has been tested on a complex multibody physics HMMWV model to perform higher fidelity testing in more situations than previously accomplished. 
 	For this research, the LIDAR-based constant speed local obstacle avoidance controller from~\cite{foo} has been implemented and tested on rigid flat terrain and granular terrain to examine the robustness of this control method. A novel simulation framework has been developed to efficiently simulate granular terrain for this application.
 }
 
@@ -153,10 +154,10 @@ Study and compare the performance of the MPC Controller on granular terrain comp
 \item
 Analyze the role of model fidelity of the internal controller model and how it affects the speed and performance of the obstacle avoidance controller.
 \item
-Showcase the potential of controller testing in a high fidelity virtual test environment with Chrono to assist with initial control algorithm development before physical implementation for vehicular applications.
+Showcase the potential of controller testing in a high fidelity virtual test environment with {\CHRONO} to assist with initial control algorithm development before physical implementation for vehicular applications.
 \end{enumerate}
 
-The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide an overviews of the MPC based local obstacle avoidance algorithm, Chrono Multibody Physics API used as the test environment, the method of simulating granular terrain in this study, the two DOF analytical vehicle model, and the fourteen DOF analytical vehicle models used in the controller for this study. In Section~\ref{s:methodology} we describe the driven HMMWV multibody physics model in Chrono used for testing in this study, our developed method for simulating a vehicle driving on granular terrain over large distances, a description of the test cases run for this study, and a summary of the evaluation metrics used to compare one test case to another to determine which performed best. In Section~\ref{s:results} we presents the results of the tests outlined in the previous section as well as perform appropriate comparisons of the tests when the internal controller vehicle model is varied and when the terrain is changed from rigid to granular. Section~\ref{s:conclusion} wraps up the paper and presents potential future work based on the results of this study.
+The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide overviews of the MPC based local obstacle avoidance algorithm, the {\CHRONO} multiphysics package used as the test environment, the method of simulating granular terrain in this study, and the analytical vehicle models used in the controller for this study. In Section~\ref{s:methodology} we describe the {\ChronoVehicle} HMMWV vehicle model used in this study and our proposed method for simulating a vehicle driving on granular terrain over large distances. We also provide descriptions of the test cases run for this study and a summary of the metrics used to compare performance of the various tested combinations. In Section~\ref{s:results} we presents the results of the tests outlined in the previous section as well as perform appropriate comparisons of the tests when the internal controller vehicle model is varied and when the terrain is changed from rigid to granular. Section~\ref{s:conclusion} wraps up the paper and presents potential future work based on the results of this study.
 
 %% ============================================================
 
@@ -228,7 +229,7 @@ Equation~(\ref{e:SteerLimit}) imposes a limit on maximum steering angle for the 
 
 %% ============================================================
 
-\subsection{Chrono Multibody Physics Package}\label{ss:Chrono}
+\subsection{{\CHRONO} Multibody Physics Package}\label{ss:Chrono}
 
 The physics modeling and simulation capabilities are provided by the multiphysics open-source package {\CHRONO}~\cite{Chrono2016}. The core functionality of {\CHRONO} provides support for the modeling, simulation, and visualization of rigid multibody systems, with additional capabilities offered through optional modules. These modules provide support for additional classes of problems (e.g., finite element analysis and fluid-solid interaction), for modeling and simulation of specialized systems (such as ground vehicles and granular dynamics problems), or provide specialized parallel computing algorithms (multi-core, GPU, and distributed) for large-scale simulations.
 
