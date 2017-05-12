@@ -157,7 +157,7 @@ Analyze the role of model fidelity of the internal controller model and how it a
 Showcase the potential of controller testing in a high fidelity virtual test environment with {\CHRONO} to assist with initial control algorithm development before physical implementation for vehicular applications.
 \end{enumerate}
 
-The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide overviews of the MPC based local obstacle avoidance algorithm, the {\CHRONO} multiphysics package used as the test environment, the method of simulating granular terrain in this study, and the analytical vehicle models used in the controller for this study. In Section~\ref{s:methodology} we describe the {\ChronoVehicle} HMMWV vehicle model used in this study and our proposed method for simulating a vehicle driving on granular terrain over large distances. We also provide descriptions of the test cases run for this study and a summary of the metrics used to compare performance of the various tested combinations. In Section~\ref{s:results} we presents the results of the tests outlined in the previous section as well as perform appropriate comparisons of the tests when the internal controller vehicle model is varied and when the terrain is changed from rigid to granular. Section~\ref{s:conclusion} wraps up the paper and presents potential future work based on the results of this study.
+The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide overviews of the MPC based local obstacle avoidance algorithm, the {\CHRONO} multiphysics package used as the test environment, and the method of simulating granular terrain in this study. In Section~\ref{s:methodology} we describe the {\ChronoVehicle} HMMWV vehicle model used in this study as the plant model to be controlled and our proposed method for simulating a the vehicle driving on granular terrain over large distances. Then, we introduce the different simplified lower fidelity analytical vehicle models used in the MPC algorithm to predict the /CHRONO vehicle behavior. We also provide descriptions of the test cases run for this study and a summary of the metrics used to compare performance of the various tested combinations. In Section~\ref{s:results} we presents the results of the tests outlined in the previous section as well as perform appropriate comparisons of the tests when the internal controller vehicle model is varied and when the terrain is changed from rigid to granular. Section~\ref{s:conclusion} wraps up the paper and presents potential future work based on the results of this study.
 
 %% ============================================================
 
@@ -260,16 +260,28 @@ In this work, the focus is on modeling and simulating the terrain and the tire-t
 
 \todo[inline]{Jon: add rationale for restricting rotation in granular terrain dynamics; describe how this was implemented on top of Chrono}
 
+%%============================================================
+
+\section{TECHNICAL APPROACH AND METHODOLOGY}\label{s:methodology}
+
+\subsection{Chrono Full-Vehicle Model to be Controlled}\label{ss:FullVehicleModel}
+
+\todo[inline]{Description of the HMMWV Chrono::Vehicle model used as the plant}
+
+%% ============================================================
+
+\subsection{Relocating Granular Patch }\label{ss:Patch}
+
 %% ============================================================
 
 \subsection{Internal Controller Vehicle Models}\label{ss:IntModel}
 
-The vehicle models embedded in the MPC are simplifications of the full, multi-body based, wheeled vehicle model which is being controlled.  We consider two such models, providing different levels of fidelity, as described below.
+The vehicle models embedded in the MPC are simplifications of the full, multi-body based, \CHRONO wheeled vehicle model which is being controlled.  We consider two such models, providing different levels of fidelity, as described below.
 
 %% ------------------------------------------------------------
 
 \subsubsection{Two DOF Vehicle Model}\label{sss:2DOFModel}
-The standard vehicle model used in newly developed MPC obstacle avoidance algorithms such as~\cite{foo} is the 2-DOF vehicle model. These models normally either assume constant cornering stiffness or the nonlinear Pacejka Magic Formula Tire Model~\cite{foo} to predict the ground tire interaction forces. For this study and due to the availability of experimental data, the Pacejka Magic Formula is used to predict tire forces in the vehicle models. This is outlined in the Pacejka Magic Formula section.  
+The standard vehicle model used in newly developed MPC obstacle avoidance algorithms such as~\cite{foo} is the 2-DOF vehicle model. These models normally either assume constant cornering stiffness or the nonlinear Pacejka Magic Formula Tire Model~\cite{foo} to predict the ground tire interaction forces. For this study and due to the availability of experimental data, the Pacejka Magic Formula is used to predict tire forces in the vehicle models.   
 
 \begin{figure}
 	\centering
@@ -278,7 +290,7 @@ The standard vehicle model used in newly developed MPC obstacle avoidance algori
 	\label{fig:2DOF}
 \end{figure}
 
-A visual representation of the 2-DOF model can be found in Fig.~\ref{fig:TestMatrix}. The two DOF model is described by the following first-order ordinary differential equations:
+A visual representation of the 2-DOF model can be found in Fig.~\ref{fig:2DOF}. The two DOF model is described by the following first-order ordinary differential equations:
 
 \begin{equation}\label{e:2DOF_Vdot}
 \dot{V} = \left(F_{y,f} + F_{y,r}\right)/{M - U_0r} 
@@ -319,32 +331,12 @@ The Pacejka Magic Formula is used to calculate the ground tire interaction force
 \todo[inline] {Add 14DOF vehicle model figure}
 
 %% ============================================================
-% -----> Consider Removing this Section
-
-%\subsection{Pacejka Magic Formula}\label{ss:Pacejka}
-%The Pacejka Magic Formula is used to predict the ground tire interactions in both the two DOF and fourteen DOF vehicle models. The force and moment from combined slip are calculated and input to the fourteen DOF model. The lateral force in the pure lateral slip condition is input to the two DOF model in Equations (1-2). The Pacejka Magic Formula equations have been omitted here but can be found in [17].
-
-%The Magic Formula models steady state and transient tire behaviors on smooth surfaces [17]. This is a valid assumption and proper use of the Magic Formula for the rigid terrain simulations. However, the Pacejka Magic Formula was not developed for implementation on granular terrain. Certain parameters of the ground tire interaction become much more difficult to calculate such as slip angle and tire deformation on granular terrain. This study recognizes a discrepancy between the utilized Magic Formula for this research and the actual ground interaction forces between the granular terrain and the tire. However, this research seeks to identify how robust a two DOF and fourteen DOF MPC LIDAR based local obstacle avoidance controller is as the terrain shifts from rigid ground to granular. There is potential that the Magic Formula gets close enough to estimating tire forces that the vehicle can still successfully navigate through an obstacle field. There is also a much stronger potential the simulations on granular terrain will perform unfavorably or fail altogether, leading to future development of an improved vehicle model that better models vehicle behavior on granular terrain simply. This discrepancy is noted and considered when analyzing the results of this study
-
-%% ============================================================
-
-\section{TECHNICAL APPROACH AND METHODOLOGY}\label{s:methodology}
-
-\subsection{Chrono Full-Vehicle Model to be Controlled}\label{ss:FullVehicleModel}
-
-\todo[inline]{Description of the HMMWV Chrono::Vehicle model used as the plant}
-
-%% ============================================================
-
-\subsection{Relocating Granular Patch }\label{ss:Patch}
-
-%% ============================================================
-
 \subsection{Open Loop Comparisons }\label{ss:OpenLoop}
 
 %% ============================================================
 
 \subsection{Evaluation Metrics}\label{ss:Metrics}
+Five evaluation metrics will be used to compare one test performance to the other. First, all test runs will be compared based on the time to reach the target $T_{target}$. Tests on the same terrain can be compared with this metric to determine which controller leads the vehicle to the target point quickest. Second, the closest distance the vehicle reaches to any obstacle $d_{min}$ will be measured. A controller that accurately predicts vehicle performance should allow the vehicle get much closer to obstacles. Third, the control effort will be calculated and compared between test cases. Fourth, the max lateral acceleration of the vehicle will be determined. Finally, the average lateral acceleration will be determined from the test cases. These five evaluation metrics provide a logical method for comparing one test case to another whether two test cases are on different terrain, have different analytical controller models, or both. 
 
 %% ============================================================
 
@@ -353,7 +345,7 @@ Simulations on both rigid and granular terrain were compared to understand how t
 
 \begin{table}
 \begin{center}
-	\begin{tabular}{||c c c||} 
+	\begin{tabular}{||c |c | c||} 
 		\hline
 		Test  & Terrain  & Controller Vehicle \\
 		Number &  Type & Model\\ [0.5ex] 	
@@ -383,12 +375,50 @@ The second obstacle field contains four circular obstacles of varying sizes plac
 	\label{fig:Obst1}
 \end{figure}
 
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c|c|c|c||} 
+		\hline
+		& x & y & Radius\\
+		\hline
+		Target Location  & 200.0 & 0.0 & -\\ 
+		\hline
+		Obstacle 1 & 100.0 & 0.0 & 15.0\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Obstacle Field 1 Summary}
+\label{t:Obst1Summary}
+\end{table}
+
 \begin{figure}
 	\centering
 	\includegraphics[width=\columnwidth]{Figs/no-image.png}
 	\caption{\small Obstacle Field 2}   
 	\label{fig:Obst2}
 \end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c|c|c|c||} 
+		\hline
+		& x & y & Radius\\
+		\hline
+		Target Location  & 550.0 & 0.0 & -\\ 
+		\hline
+		Obstacle 1 & 100.0 & 0.0 & 15.0\\
+		\hline
+		Obstacle 2 & 200.0 & -50.0 & 30.0\\
+		\hline
+		Obstacle 3 & 300.0 & 55.0 & 30.0\\
+		\hline
+		Obstacle 4 & 425.0 & 0.0 & 50.0\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Obstacle Field 2 Summary}
+\label{t:Obst2Summary}
+\end{table}
 
 %% ============================================================
 
@@ -401,17 +431,287 @@ This section summarizes the results of the four tests listed in Table~\ref{t:Tes
 
 \subsubsection{Test 1 Results}\label{sss:Test1}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 1 Vehicle Trajectory Obstacle Field 1}  
+	\label{fig:Test1_Obst1}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 1 Obstacle Field 1 Steering Commands}  
+	\label{fig:Test1_Obst1_Steer}
+\end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 1 Obstacle Field 1}
+\label{t:EvalTest1Obst1}
+\end{table}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 1 Vehicle Trajectory Obstacle Field 2}  
+	\label{fig:Test1_Obst2}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 1 Obstacle Field 2 Steering Commands}  
+	\label{fig:Test1_Obst2_Steer}
+\end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 1 Obstacle Field 2}
+\label{t:EvalTest1Obst2}
+\end{table}
 %% ------------------------------------------------------------
 
 \subsubsection{Test 2 Results}\label{sss:Test2}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 2 Vehicle Trajectory Obstacle Field 1}  
+	\label{fig:Test2_Obst1}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 2 Obstacle Field 1 Steering Commands}  
+	\label{fig:Test2_Obst1_Steer}
+\end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 2 Obstacle Field 1}
+\label{t:EvalTest2Obst1}
+\end{table}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 2 Vehicle Trajectory Obstacle Field 2}  
+	\label{fig:Test2_Obst2}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 2 Obstacle Field 2 Steering Commands}  
+	\label{fig:Test2_Obst2_Steer}
+\end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 2 Obstacle Field 2}
+\label{t:EvalTest2Obst2}
+\end{table}
 
 %% ------------------------------------------------------------
 
 \subsubsection{Test 3 Results}\label{sss:Test3}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 3 Vehicle Trajectory Obstacle Field 1}  
+	\label{fig:Test3_Obst1}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 3 Obstacle Field 1 Steering Commands}  
+	\label{fig:Test3_Obst1_Steer}
+\end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 3 Obstacle Field 1}
+\label{t:EvalTest3Obst1}
+\end{table}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 3 Vehicle Trajectory Obstacle Field 2}  
+	\label{fig:Test3_Obst2}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 3 Obstacle Field 2 Steering Commands}  
+	\label{fig:Test3_Obst2_Steer}
+\end{figure}
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 3 Obstacle Field 2}
+\label{t:EvalTest3Obst2}
+\end{table}
+
 %% ------------------------------------------------------------
 
 \subsubsection{Test 4 Results}\label{sss:Test4}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 4 Vehicle Trajectory Obstacle Field 1}  
+	\label{fig:Test4_Obst1}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 4 Obstacle Field 1 Steering Commands}  
+	\label{fig:Test4_Obst1_Steer}
+\end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 4 Obstacle Field 1}
+\label{t:EvalTest4Obst1}
+\end{table}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 4 Vehicle Trajectory Obstacle Field 2}  
+	\label{fig:Test4_Obst2}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\caption{\small Test 4 Obstacle Field 2 Steering Commands}  
+	\label{fig:Test4_Obst2_Steer}
+\end{figure}
+
+\begin{table}
+\begin{center}
+	\begin{tabular}{||c |c||} 
+		\hline
+		$T_{target}$ & ??\\ 
+		\hline
+		$d_{min}$ & ??\\
+		\hline
+		Control Effort & ??\\
+		\hline
+		Max Lateral Acceleration & ??\\
+		\hline
+		Avg. Lateral Acceleration & ??\\
+		\hline
+	\end{tabular}
+\end{center}
+\caption{Evaluation Metrics Test 4 Obstacle Field 2}
+\label{t:EvalTest4Obst2}
+\end{table}
 
 %% ============================================================
 
