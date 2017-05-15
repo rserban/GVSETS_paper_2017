@@ -117,7 +117,7 @@
 	A Model Predictive Control (MPC) Algorithm was used by Liu, Ersal, Stein, and Jayakumar to develop a LIDAR-based constant speed local obstacle avoidance controller for autonomous ground vehicles. 
 	Provided LIDAR data as well as a target location, a vehicle can route itself around obstacles as it encounters them and arrive at an end goal via an optimal route.
 	Using {\CHRONO}, a multibody physics API, this controller has been tested on a complex multibody physics HMMWV model to perform higher fidelity testing in more situations than previously accomplished. 
-	For this research, the LIDAR-based constant speed local obstacle avoidance controller from~\cite{foo} has been implemented and tested on rigid flat terrain and granular terrain to examine the robustness of this control method. A novel simulation framework has been developed to efficiently simulate granular terrain for this application.
+	For this research, the LIDAR-based constant speed local obstacle avoidance controller from~\cite{ModelFidelity2016} has been implemented and tested on rigid flat terrain and granular terrain to examine the robustness of this control method. A novel simulation framework has been developed to efficiently simulate granular terrain for this application.
 }
 
 %% ============================================================
@@ -168,11 +168,11 @@ The remainder of this paper is organized as follows.  In Section~\ref{s:backgrou
 \subsection{MPC Based Local Obstacle Avoidance }\label{ss:MPC}
 The concept of MPC is to use an internal model of the system one desires to control to predict and optimize future system behavior from the current system state and inputs. The system behavior is predicted over some defined finite time horizon and the optimal control sequence over the prediction horizon is output. The control sequence is executed for an execution time smaller than the prediction horizon, and the whole process is repeated. The repetition of this process over time creates a feedback loop which continually controls the system, pushing it towards an optimal path.
 
-For this study, the system to be controlled is an AGV. Consider an AGV located in a level environment without roads or any other structures to guide the AGV’s motion. The AGV also has a known global target position. Between the target position and the current vehicle position there may or may not be obstacles of unknown size. Using the MPC formulation outlined in~\cite{foo}, the vehicle can navigate from the current position to the provided target position while avoiding obstacles as they are encountered. Obstacle information is assumed to be unknown a priori and only obtained through a planar LIDAR sensor. The MPC schematic is presented in Fig.~\ref{fig:MPC_schematic}.
+For this study, the system to be controlled is an AGV. Consider an AGV located in a level environment without roads or any other structures to guide the AGV’s motion. The AGV also has a known global target position. Between the target position and the current vehicle position there may or may not be obstacles of unknown size. Using the MPC formulation outlined in~\cite{ModelFidelity2016}, the vehicle can navigate from the current position to the provided target position while avoiding obstacles as they are encountered. Obstacle information is assumed to be unknown a priori and only obtained through a planar LIDAR sensor. The MPC schematic is presented in Fig.~\ref{fig:MPC_schematic}.
 %
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\includegraphics[width=\columnwidth]{Figs/MPCBlockDiagram.png}
 	\caption{\small Schematic of MPC LIDAR-Based Constant Speed Local Obstacle Avoidance Controller.  \todo[inline]{adjust sizing of schematic text}}    
 	\label{fig:MPC_schematic}
 \end{figure}
@@ -181,14 +181,14 @@ The planar LIDAR sensor is mounted at the front center location of the vehicle. 
 %
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\includegraphics[width=\columnwidth]{Figs/LIDARExample.png}
 	\caption{\small Sample obstacle field and LIDAR output.}    
 	\label{fig:obstacle_field}
 \end{figure}
 	
 The outputs of the MPC algorithm are the steering signals only for this simulation. As shown in Fig.~\ref{fig:MPC_schematic}, the MPC algorithm is made up of the internal controller vehicle model, the cost function and constraints, and the dynamic optimizer. The internal controller vehicle model predicts the future states of the AGV for a given steering sequence and is of interest in this work. For this study, the internal controller vehicle model is varied from test to test between a 2-DOF vehicle model and a 14-DOF vehicle model, detailed in further sections. The cost functions and constraints are used to formulate the optimal control problem with the equations from the vehicle model. The dynamic optimizer then solves the optimal control problem. For the purpose of this paper, exhaustive search is used to find the optimal solution to the problem since solution speed is not a primary focus of this paper, but more importantly the ability to find and execute an optimal solution.
 
-The same controller as formulated in~\cite{foo} is used for this study. The cost function and constraints need to be specified to avoid collisions with obstacles and guarantee vehicle dynamical safety. The optimal control problem solved at each MPC time step is comprised of the following set of equations:
+The same controller as formulated in~\cite{ModelFidelity2016} is used for this study. The cost function and constraints need to be specified to avoid collisions with obstacles and guarantee vehicle dynamical safety. The optimal control problem solved at each MPC time step is comprised of the following set of equations:
 
 \begin{equation}\label{e:MPCCost}
 J = s_T + wd 
@@ -229,6 +229,15 @@ Equation~(\ref{e:SafeArea}) defines a safe area polygon. All points along paths 
 
 Equation~(\ref{e:SteerLimit}) imposes a limit on maximum steering angle for the vehicle based on vehicle speed. This value is obtained from a lookup table which can be generated either experimentally or from simulation. Equation~(\ref{e:SteerRateLimit}) imposes a maximum limit on steering rate. Equation~(\ref{e:TimeDomain}) defines the time limits over which this optimal control problem is solved.
 
+Equation ~(\ref{e:State_ODE}) as noted above refers to an analytical vehicle model expressed as a set of differential equations. This is how the controller is able to predict vehicle performance within the prediction horizon. The accuracy of the internal vehicle controller model should directly influence the driven vehicle's controlled performance. If the internal vehicle controller model poorly predicts a vehicle's response to inputs from the driver or the environment, then these deficciencies will be witnessed when attempting to control the driven vehicle. In the case of this study, an internal vehicle controller model that poorly represents the driven vehicle may predict that a specified steering sequence will navigate the driven vehicle around an approaching obstacle, but due to this descrepancy the driven vehicle may not turn quickly enough and collide with the obstacle. However, using an internal vehicle controller model that is highly complex may provide accurate trajectory and vehicle response predictions, but the time required to solve an optimal control problem with this complicated set of differential equations is much higher than using a simpler internal vehicle controller model. Since the eventual goal is physical implementation of this controller, an ideal controller would not just accurately predict vehicle responses but also do it quick enough to insure vehicle safety. Therefore for this study the driven vehicle that will be controlled is a HMMWV developed in {\CHRONO}. This vehicle will be controlled using two separately developed controllers. The first controller uses a simple 2 DOF vehicle model to predict the {\CHRONO}  HMMWV trajectory for different series of steering sequences and is presented in detail in Section~\ref{sss:2DOFModel}. The second controller uses a complex 14 DOF vehicle model to predict vehicle states for different series of steering sequences. Once again, this study will test each of these controller's abilities to successfully navigate the driven {\CHRONO}  HMMWV vehicle through two obstacle fields on rigid flat terrain and then granular terrain. The driven {\CHRONO} HMMWV vehicle is presented in detail in Section~\ref{ss:FullVehicleModel}. Exhaustive search space is used to solve the optimal control problem in each time step since the goal of this study is to analyze the vehicle's ability to be successfully navigated through an obstacle field and not how quickly the problem can be solved. A sample visualization of the different predicted trajectories from the 2 DOF model is presented in Fig.~\ref{fig:PossiblePaths}. A point in polygon algorithm is used to determine which trajectories remain inside of the safe area polygon and therefore should be compared to the other possibilities using Eq.~(\ref{e:MPCCost}).
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/PathPossibilities.png}
+	\caption{\small Potential Paths predicted by 2 DOF Internal Vehicle Controller Model}  
+	\label{fig:PossiblePaths}
+\end{figure}
+
 %% ============================================================
 
 \subsection{{\CHRONO} Multibody Physics Package}\label{ss:Chrono}
@@ -256,12 +265,6 @@ In this work, the focus is on modeling and simulating the terrain and the tire-t
 
 \todo[inline]{More about DEM (NSC and SMC)...}
 
-%% ------------------------------------------------------------
-
-\subsubsection{Non-Rotating Particles}\label{sss:NonRot}
-
-\todo[inline]{Jon: add rationale for restricting rotation in granular terrain dynamics; describe how this was implemented on top of Chrono}
-
 %%============================================================
 
 \section{TECHNICAL APPROACH AND METHODOLOGY}\label{s:methodology}
@@ -278,12 +281,12 @@ In this work, the focus is on modeling and simulating the terrain and the tire-t
 
 \subsection{Internal Controller Vehicle Models}\label{ss:IntModel}
 
-The vehicle models embedded in the MPC are simplifications of the full, multi-body based, \CHRONO wheeled vehicle model which is being controlled.  We consider two such models, providing different levels of fidelity, as described below.
+The vehicle models embedded in the MPC are simplifications of the full, multi-body based, {\CHRONO} wheeled vehicle model which is being controlled.  We consider two such models, providing different levels of fidelity, as described below.
 
 %% ------------------------------------------------------------
 
 \subsubsection{Two DOF Vehicle Model}\label{sss:2DOFModel}
-The standard vehicle model used in newly developed MPC obstacle avoidance algorithms such as~\cite{foo} is the 2-DOF vehicle model. These models normally either assume constant cornering stiffness or the nonlinear Pacejka Magic Formula Tire Model~\cite{foo} to predict the ground tire interaction forces. For this study and due to the availability of experimental data, the Pacejka Magic Formula is used to predict tire forces in the vehicle models.   
+The standard vehicle model used in newly developed MPC obstacle avoidance algorithms such as~\cite{ModelFidelity2016} is the 2-DOF vehicle model. These models normally either assume constant cornering stiffness or the nonlinear Pacejka Magic Formula Tire Model~\cite{foo} to predict the ground tire interaction forces. For this study and due to the availability of experimental data, the Pacejka Magic Formula is used to predict tire forces in the vehicle models.   
 
 \begin{figure}
 	\centering
@@ -317,9 +320,9 @@ where $F_{y,f}$ and $F_{y,r}$ are the lateral tire forces at the front and rear 
 %% ------------------------------------------------------------
 
 \subsubsection{Fourteen DOF Vehicle Model}\label{sss:14DOFModel}
-A fourteen DOF model is often used in studies such as these to test the obstacle avoidance controller with a higher fidelity vehicle model~\cite{foo, bar}. A benefit of using the fourteen DOF in the controller is the model’s ability to predict tire liftoff and account for dynamic effects from suspension systems. For this paper then it is appropriate to also compare performance of the local obstacle avoidance controller running an internal fourteen DOF on rigid terrain versus granular terrain.  
+A fourteen DOF model is often used in studies such as these to test the obstacle avoidance controller with a higher fidelity vehicle model~\cite{ModelFidelity2016, ModelFidelity2013}. A benefit of using the fourteen DOF in the controller is the model’s ability to predict tire liftoff and account for dynamic effects from suspension systems. For this paper then it is appropriate to also compare performance of the local obstacle avoidance controller running an internal fourteen DOF on rigid terrain versus granular terrain.  
 
-The fourteen DOF vehicle model consists of one sprung mass connected above four unsprung masses~\cite{foo}. A visual representation of the fourteen DOF vehicle model can be found in Fig.~\ref{fig:14DOF}. The sprung mass is allowed to roll, pitch, and yaw while also displacing laterally, vertically, and longitudinally. This sprung mass contributes six DOF to the model. Each of the four wheels are allowed to bounce vertically and rotate about the wheel horizontal axis. The front two wheels are also free to steer. Each wheel then contributes two DOF to the fourteen DOF model. The equations used for this model as well as their developments can be found in~\cite{foo}.
+The fourteen DOF vehicle model consists of one sprung mass connected above four unsprung masses~\cite{RollStudies2007}. A visual representation of the fourteen DOF vehicle model can be found in Fig.~\ref{fig:14DOF}. The sprung mass is allowed to roll, pitch, and yaw while also displacing laterally, vertically, and longitudinally. This sprung mass contributes six DOF to the model. Each of the four wheels are allowed to bounce vertically and rotate about the wheel horizontal axis. The front two wheels are also free to steer. Each wheel then contributes two DOF to the fourteen DOF model. The equations used for this model as well as their developments can be found in~\cite{RollStudies2007}.
 
 \begin{figure}
 	\centering
@@ -372,7 +375,7 @@ The second obstacle field contains four circular obstacles of varying sizes plac
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\includegraphics[width=\columnwidth]{Figs/ObstacleField1.png}
 	\caption{\small Obstacle Field 1}  
 	\label{fig:Obst1}
 \end{figure}
@@ -395,7 +398,7 @@ The second obstacle field contains four circular obstacles of varying sizes plac
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
+	\includegraphics[width=\columnwidth]{Figs/ObstacleField2.png}
 	\caption{\small Obstacle Field 2}   
 	\label{fig:Obst2}
 \end{figure}
@@ -719,7 +722,7 @@ This section summarizes the results of the four tests listed in Table~\ref{t:Tes
 
 \subsection{Method Comparisons}\label{ss:comparisons}
 
-To gauge the efficacy and appropriateness of the 2-DOF and 14-DOF models as embedded MPC model, we compare results obtained with each of them on both rigid and granular terrain.  These findings are summarized below.
+To gauge the efficacy and appropriateness of the 2-DOF and 14-DOF models as embedded MPC models, we compare results obtained with each of them on both rigid and granular terrain.  These findings are summarized below.
 
 %% ------------------------------------------------------------
 
