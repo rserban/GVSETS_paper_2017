@@ -322,18 +322,10 @@ where $F_{y,f}$ and $F_{y,r}$ are the lateral tire forces at the front and rear 
 \subsubsection{Fourteen DOF Vehicle Model}\label{sss:14DOFModel}
 A fourteen DOF model is often used in studies such as these to test the obstacle avoidance controller with a higher fidelity vehicle model~\cite{ModelFidelity2016, ModelFidelity2013}. A benefit of using the fourteen DOF in the controller is the model’s ability to predict tire liftoff and account for dynamic effects from suspension systems. For this paper then it is appropriate to also compare performance of the local obstacle avoidance controller running an internal fourteen DOF on rigid terrain versus granular terrain.  
 
-The fourteen DOF vehicle model consists of one sprung mass connected above four unsprung masses~\cite{RollStudies2007}. A visual representation of the fourteen DOF vehicle model can be found in Fig.~\ref{fig:14DOF}. The sprung mass is allowed to roll, pitch, and yaw while also displacing laterally, vertically, and longitudinally. This sprung mass contributes six DOF to the model. Each of the four wheels are allowed to bounce vertically and rotate about the wheel horizontal axis. The front two wheels are also free to steer. Each wheel then contributes two DOF to the fourteen DOF model. The equations used for this model as well as their developments can be found in~\cite{RollStudies2007}.
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Fourteen DOF Vehicle Model}  
-	\label{fig:14DOF}
-\end{figure}
+The fourteen DOF vehicle model consists of one sprung mass connected above four unsprung masses~\cite{RollStudies2007}. The sprung mass is allowed to roll, pitch, and yaw while also displacing laterally, vertically, and longitudinally. This sprung mass contributes six DOF to the model. Each of the four wheels are allowed to bounce vertically and rotate about the wheel horizontal axis. The front two wheels are also free to steer. Each wheel then contributes two DOF to the fourteen DOF model. The equations used for this model as well as their developments can be found in~\cite{RollStudies2007}.
 
 The Pacejka Magic Formula is used to calculate the ground tire interaction forces in the fourteen DOF vehicle model. On rigid terrain, this is an accurate and valid assumption. However, based on how the Pacejka Magic Formula is derived and coefficients experimentally obtained, using the Magic Formula to estimate tire forces on granular terrain is not a valid assumption. However, this estimation may provide tire forces that are close enough to still allow the vehicle to successfully navigate the obstacle field safely. 
 \todo[inline]{ finish this paragraph}
-\todo[inline] {Add 14DOF vehicle model figure}
 
 %% ============================================================
 \subsection{Open Loop Comparisons }\label{ss:OpenLoop}
@@ -346,7 +338,6 @@ Five evaluation metrics will be used to compare one test performance to the othe
 %% ============================================================
 
 \subsection{Numerical Simulation Setup }\label{ss:Setup}
-Simulations on both rigid and granular terrain were compared to understand how the controller performs on non-ideal surfaces.  The two internal controller vehicle models to be studied in these tests are the previously described two DOF and fourteen DOF vehicle models. Aside from changing the internal controller vehicle model from study to study, the rest of the controller will remain the same. Referring to Table~\ref{t:TestMatrix}, Tests 1 and 2 will be compared to understand how model fidelity influences controller performance on rigid flat terrain. Tests 3 and 4 will be compared to again understand the role of model fidelity in the MPC controller on granular terrain. Tests 1 and 3 will be compared to understand how the same controller performs differently on granular terrain as opposed to rigid flat terrain. Similar comparisons will be made between Tests 2 and 4. Each of the tests will consist of one run on two different obstacle fields created to target the controller’s ability to navigate the vehicle through certain obstacle combinations.
 
 \begin{table}
 \begin{center}
@@ -369,9 +360,7 @@ Simulations on both rigid and granular terrain were compared to understand how t
 \label{t:TestMatrix}
 \end{table}
 
-For this paper two obstacle fields were generated. The first contains one large circular obstacle located along the initial heading of the vehicle. The target position is located a large distance then behind the single obstacle. Figure~\ref{f:Obst1} presents this obstacle field. The goal of this test is to analyze the performance of the vehicle and controller around a single obstacle. 
-
-The second obstacle field contains four circular obstacles of varying sizes placed in the vehicle’s initial heading direction. The performance of the vehicle on this obstacle field should allow for understanding of how the controller and vehicle navigate around multiple obstacles in a more realistic scenario. Refer to Fig.~\ref{f:Obst2}.
+Simulations on both rigid and granular terrain were compared to understand how the controller performs on non-ideal surfaces.  The two internal controller vehicle models to be studied in these tests are the previously described two DOF and fourteen DOF vehicle models. Aside from changing the internal controller vehicle model from study to study, the rest of the controller will remain the same. Referring to Table~\ref{t:TestMatrix}, Tests 1 and 2 will be compared to understand how model fidelity influences controller performance on rigid flat terrain. Tests 3 and 4 will be compared to again understand the role of model fidelity in the MPC controller on granular terrain. Tests 1 and 3 will be compared to understand how the same controller performs differently on granular terrain as opposed to rigid flat terrain. Similar comparisons will be made between Tests 2 and 4. Each of the tests will consist of one run on two different obstacle fields created to target the controller’s ability to navigate the vehicle through certain obstacle combinations.
 
 \begin{figure}
 	\centering
@@ -425,325 +414,129 @@ The second obstacle field contains four circular obstacles of varying sizes plac
 \label{t:Obst2Summary}
 \end{table}
 
+For this paper two obstacle fields were generated. The first contains one large circular obstacle located along the initial heading of the vehicle. The target position is located a large distance then behind the single obstacle. Figure~\ref{fig:Obst1} presents this obstacle field. The goal of this test is to analyze the performance of the vehicle and controller around a single obstacle. 
+
+The second obstacle field contains four circular obstacles of varying sizes placed in the vehicle’s initial heading direction. The performance of the vehicle on this obstacle field should allow for understanding of how the controller and vehicle navigate around multiple obstacles in a more realistic scenario. Refer to Fig.~\ref{fig:Obst2}.
+
 %% ============================================================
 
 \section{SIMULATION RESULTS}\label{s:results}
 
-%% ============================================================
-
-\subsection{Test Results}\label{ss:test_results}
-This section summarizes the results of the four tests listed in Table~\ref{t:TestMatrix}.
-
-\subsubsection{Test 1 Results}\label{sss:Test1}
+This section summarizes the results of the four tests listed in Table~\ref{t:TestMatrix}. 
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 1 Vehicle Trajectory Obstacle Field 1}  
-	\label{fig:Test1_Obst1}
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{Figs/ObstacleField1Trajectories.png}
+		\caption{{\small Trajectories from Tests on Obstacle Field 1}}   
+		\label{fig:ObstacleField1Trajectories}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{Figs/SteeringCommandsField1.png}
+		\caption{\small Steering Commands on Obstacle Field 1}   
+		\label{fig:SteeringCommandsField1}
+	\end{subfigure}
+	\caption{\small Trajectories and Steering Data for Obstacle Field 1}
+	\label{fig:Obst1TestData}
 \end{figure}
+
+\begin{table*}
+		\centering
+\begin{tabular}{ ||p{5cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}||  }
+		\hline
+		Test Number & 1 & 2 & 3 & 4\\
+		\hline
+		Controller Model & 2DOF & 14DOF & 2DOF & 14DOF\\
+		\hline
+		Terrain & Rigid & Rigid & Granular & Granular\\
+		\hline
+		Time to Target (s)  & 26.67 & 26.15 & 28.32 & 28.03\\ 
+		\hline
+		Minimum Obstacle Distance (m) & 0.897 & 5.462 & 3.491 & 4.721\\
+		\hline
+		Controller Effort & 0.0340 & 0.0340 & 0.0340 & 0.0306\\
+		\hline
+		Max Lateral Acceleration (m/s\^{2})& 3.21 & 1.59 & 31.61 & 34.46 \\
+		\hline
+		Average Lateral Acceleration (m/s\^{2}) & 0.57 & 0.53 & 1.86 & 1.72\\
+		\hline
+\end{tabular}
+\caption{Test Evaluation Metrics Summary on Obstacle Field 1}
+\label{t:EvalMetricsObst1}
+\end{table*}
+
+
+
+
+
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 1 Obstacle Field 1 Steering Commands}  
-	\label{fig:Test1_Obst1_Steer}
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{Figs/ObstacleField2Trajectories.png}
+		\caption{{\small Trajectories from Tests on Obstacle Field 2}}   
+		\label{fig:ObstacleField2Trajectories}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{Figs/SteeringCommandsField2.png}
+		\caption{\small Steering Commands on Obstacle Field 2}   
+		\label{fig:SteeringCommandsField2}
+	\end{subfigure}
+	\caption{\small Trajectories and Steering Data for Obstacle Field 2}
+	\label{fig:Obst2TestData}
 \end{figure}
 
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
+\begin{table*}
+		\centering
+\begin{tabular}{ ||p{5cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}||  }
 		\hline
-		$T_{target}$ & ??\\ 
+		Test Number & 1 & 2 & 3 & 4\\
 		\hline
-		$d_{min}$ & ??\\
+		Controller Model & 2DOF & 14DOF & 2DOF & 14DOF\\
 		\hline
-		Control Effort & ??\\
+		Terrain & Rigid & Rigid & Granular & Granular\\
 		\hline
-		Max Lateral Acceleration & ??\\
+		Time to Target (s)  & 73.85 & 71.55 & 76.64 & 74.70\\ 
 		\hline
-		Avg. Lateral Acceleration & ??\\
+		Minimum Obstacle Distance (m) & 0.331 & 2.599 & 1.083 & 1.152\\
 		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 1 Obstacle Field 1}
-\label{t:EvalTest1Obst1}
-\end{table}
+		Controller Effort & 0.0510 & 0.0680 & 0.0714 & 0.0612\\
+		\hline
+		Max Lateral Acceleration (m/s$^{2}$)& 3.20 & 2.85 &9.06 & 10.18 \\
+		\hline
+		Average Lateral Acceleration (m/s$^{2}$) & 0.43 & 0.44 & 1.83 & 1.88\\
+		\hline
+\end{tabular}
+\caption{Test Evaluation Metrics Summary on Obstacle Field 2}
+\label{t:EvalMetricsObst2}
+\end{table*}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 1 Vehicle Trajectory Obstacle Field 2}  
-	\label{fig:Test1_Obst2}
-\end{figure}
+The trajectories for the four performed tests are presented in Fig. \ref{fig:ObstacleField1Trajectories} on Obstacle Field 1 and Fig. \ref{fig:ObstacleField2Trajectories}  on Obstacle Field 2 and their associated steering commands generated by the controller are presented in Fig. \ref{fig:SteeringCommandsField1} and \ref{fig:SteeringCommandsField2}. Just from looking at the trajectories of the vehicles, several observations can be made. The controlled vehicle in each test successfully maneuvers around the single obstacle in Obstacle Field 1. From this we can see as has been proven in~\cite{ModelFidelity2016} that even though the 2DOF vehicle model lacks the complexity and fidelity of the 14DOF model, it can still safely navigate a vehicle successfully through an obstacle field while moving at a non-extreme speed. The evaluation metrics for each test as defined in Section~\ref{ss:Metrics} are tabulated for the runs on each obstacle field. The evaluation metrics for the runs on Obstacle Field 1 are presented in Table~\ref{t:EvalMetricsObst1} and for Obstacle Field 2 in Table~\ref{t:EvalMetricsObst2}. 
 
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 1 Obstacle Field 2 Steering Commands}  
-	\label{fig:Test1_Obst2_Steer}
-\end{figure}
+Comparing the results of Test 1 and Test 2, we are able to examine the performance differences that occur when a 2DOF internal vehicle model is used within the controller to control the {\CHRONO} vehicle as opposed to the higher fidelity 14DOF internal vehicle model used in the controller in Test 2. On both Obstacle Field 1 and 2, the controllers that use the 14DOF internal vehicle model to predict vehicle states guides the {\CHRONO} vehicle to the goal quicker than the controllers with the internal 2DOF vehicle model. However, in each of these instances the time difference is slim. At most in these tests a controller using the 14DOF internal vehicle reaches the target 2.2 seconds faster than the 2DOF controller tests. So in this regard the 14DOF controllers perform marginally better than the 2DOF controllers. One area the 2DOF controller model of Test 1 performs better than the 14DOF model of Test 2 is in the minimum Obstacle Distance
+metric. In all the cases, the controllers with the 2DOF internal vehicle model guided the vehicle closer to the obstacles than the controllers with the 14DOF models. This is a desirable characteristic in that the 2DOF controllers are taking more advantage of the controlled vehicle's dynamic capabilities when navgiating around obstacles. Comparing the controller effort between Tests 1 and 2, on Obstacle Field 1 the controller effort is actually the same. The 2DOF controller does input more command changes than the 14DOF controller. On Obstacle Field 2, the 14DOF controller of Test 2 actually has a higher controller effort value than the 2DOF controller by 0.0170. This may however be due to the controller's decision to move left around the last obstacle instead of continueing straight around the right side of the obstacle as the 2DOF controller commands. Finally looking at the maximum and average lateral accelerations between test 1 and test 2, regarding both of these metrics  the 14DOFcontroller performs better than the 2DOF controller on rigid terrain. Overall looking at all these metrics, on rigid terrain the 14DOF controller performs marginally better than the 2DOF controller. However considering the 14DOF takes much longer to run and the fact that realtime implementation of a 14DOF model would be infeasible, the 2DOF is suitable for use in an MPC local obstacle avoidance controller for a vehicle on rigid ground terrain traveling at non-extreme speeds. The performance drop is slight switching to the 2DOF vehicle model, but can still safely navigate the vehicle around an obstacle field to an end goal. These results support the findings and conlusions of~\cite{ModelFidelity2016} on a different AGV. 
 
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
-		\hline
-		$T_{target}$ & ??\\ 
-		\hline
-		$d_{min}$ & ??\\
-		\hline
-		Control Effort & ??\\
-		\hline
-		Max Lateral Acceleration & ??\\
-		\hline
-		Avg. Lateral Acceleration & ??\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 1 Obstacle Field 2}
-\label{t:EvalTest1Obst2}
-\end{table}
-%% ------------------------------------------------------------
+The same set of comparisons are made between the 2DOF controller and the 14DOF controller but now on granular terrain in Tests 3 and 4. Similar to on rigid ground, the 14DOF controller navigates the {\CHRONO} vehicle to the specified end goal quicker than the 2DOF controller at most by 1.94 seconds. Again though, this time difference is marginal so even though the 14DOF controller performs better than the 2DOF controller regarding time to target, this does not mean at all that the 2DOF controller performs poorly. On Obstacle Field 1 and Obstacle Field 2, the 2DOF controller guides the vehicle closer to obstacles on granular terrain than the 14DOF controllers. The 14DOF controller has a lower controller effort value than the compared 2DOF controller on granular terrain in Tests 3 and 4. Finally looking at the maximum and average lateral accelerations between Tests 3 and 4, on Obstacle Field 1 the 2DOF has a lower maximum lateral acceleration but a higher average lateral acceleration. On Obstacle Field 2 the 2DOF controller results in a lower maximum lateral acceleration and average lateral acceleration than the 14DOF controller of test 4 on granular terrain. Overall looking at the previously mentioned metrics, the 14DOF controller again performs marginally better than the 2DOF controller on granular terrain. Even though the 2DOF and 14DOF internal vehicle models were derived using rigid ground assumptions, they are still capable of successfully navigating the {\CHRONO} vehicle through an obstacle field safely on certain granuler media. The same conclusion from this comparison can be made as from comparing Tests 1 and 2. Though vehicle performance marginally drops when using the 2DOF controller, realistically the software benefits of using the 2DOF controller outweigh the slight performance drop seen by this study at non-extreme vehicle speeds.
 
-\subsubsection{Test 2 Results}\label{sss:Test2}
+By comparing Tests 2 and 4, observations are made about the difference between a vehicle operating on rigid ground versus granular terrain when the controller is held constant. In this case, the controller used is the 14DOF controller so we can analyze performance differences between navigating on rigid ground versus granular terrain. In all cases the time to target is lower on rigid ground tests than on granular tests we will ignore that evaluation metric when making the comparison between Tests 2 and 4. In Test 4, the vehicle navigates much closer to any obstacle than in Test 2 on rigid ground. On granular terrain though, the controller effort is lower than on rigid ground. The maximum and average lateral accelerations are significantly higher on granular terrain than on rigid ground. This is an expected result and one that enforces the need to test controllers on many different types of terrain before implementation. Comparing Tests 1 and 3 yields similar conclusions as comparing Tests 2 and 4. On rigid ground, the 2DOF controller does a better job of approaching the obstacles more closely. The controller effort is also lower in Test 1 on rigid ground than on granular terrain in Test 3. Again, the lateral accelerations metrics on rigid ground are significantly less than those on granular terrain.
 
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 2 Vehicle Trajectory Obstacle Field 1}  
-	\label{fig:Test2_Obst1}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 2 Obstacle Field 1 Steering Commands}  
-	\label{fig:Test2_Obst1_Steer}
-\end{figure}
-
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
-		\hline
-		$T_{target}$ & ??\\ 
-		\hline
-		$d_{min}$ & ??\\
-		\hline
-		Control Effort & ??\\
-		\hline
-		Max Lateral Acceleration & ??\\
-		\hline
-		Avg. Lateral Acceleration & ??\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 2 Obstacle Field 1}
-\label{t:EvalTest2Obst1}
-\end{table}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 2 Vehicle Trajectory Obstacle Field 2}  
-	\label{fig:Test2_Obst2}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 2 Obstacle Field 2 Steering Commands}  
-	\label{fig:Test2_Obst2_Steer}
-\end{figure}
-
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
-		\hline
-		$T_{target}$ & ??\\ 
-		\hline
-		$d_{min}$ & ??\\
-		\hline
-		Control Effort & ??\\
-		\hline
-		Max Lateral Acceleration & ??\\
-		\hline
-		Avg. Lateral Acceleration & ??\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 2 Obstacle Field 2}
-\label{t:EvalTest2Obst2}
-\end{table}
-
-%% ------------------------------------------------------------
-
-\subsubsection{Test 3 Results}\label{sss:Test3}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 3 Vehicle Trajectory Obstacle Field 1}  
-	\label{fig:Test3_Obst1}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 3 Obstacle Field 1 Steering Commands}  
-	\label{fig:Test3_Obst1_Steer}
-\end{figure}
-
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
-		\hline
-		$T_{target}$ & ??\\ 
-		\hline
-		$d_{min}$ & ??\\
-		\hline
-		Control Effort & ??\\
-		\hline
-		Max Lateral Acceleration & ??\\
-		\hline
-		Avg. Lateral Acceleration & ??\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 3 Obstacle Field 1}
-\label{t:EvalTest3Obst1}
-\end{table}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 3 Vehicle Trajectory Obstacle Field 2}  
-	\label{fig:Test3_Obst2}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 3 Obstacle Field 2 Steering Commands}  
-	\label{fig:Test3_Obst2_Steer}
-\end{figure}
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
-		\hline
-		$T_{target}$ & ??\\ 
-		\hline
-		$d_{min}$ & ??\\
-		\hline
-		Control Effort & ??\\
-		\hline
-		Max Lateral Acceleration & ??\\
-		\hline
-		Avg. Lateral Acceleration & ??\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 3 Obstacle Field 2}
-\label{t:EvalTest3Obst2}
-\end{table}
-
-%% ------------------------------------------------------------
-
-\subsubsection{Test 4 Results}\label{sss:Test4}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 4 Vehicle Trajectory Obstacle Field 1}  
-	\label{fig:Test4_Obst1}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 4 Obstacle Field 1 Steering Commands}  
-	\label{fig:Test4_Obst1_Steer}
-\end{figure}
-
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
-		\hline
-		$T_{target}$ & ??\\ 
-		\hline
-		$d_{min}$ & ??\\
-		\hline
-		Control Effort & ??\\
-		\hline
-		Max Lateral Acceleration & ??\\
-		\hline
-		Avg. Lateral Acceleration & ??\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 4 Obstacle Field 1}
-\label{t:EvalTest4Obst1}
-\end{table}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 4 Vehicle Trajectory Obstacle Field 2}  
-	\label{fig:Test4_Obst2}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Test 4 Obstacle Field 2 Steering Commands}  
-	\label{fig:Test4_Obst2_Steer}
-\end{figure}
-
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c |c||} 
-		\hline
-		$T_{target}$ & ??\\ 
-		\hline
-		$d_{min}$ & ??\\
-		\hline
-		Control Effort & ??\\
-		\hline
-		Max Lateral Acceleration & ??\\
-		\hline
-		Avg. Lateral Acceleration & ??\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Evaluation Metrics Test 4 Obstacle Field 2}
-\label{t:EvalTest4Obst2}
-\end{table}
-
-%% ============================================================
-
-\subsection{Method Comparisons}\label{ss:comparisons}
-
-To gauge the efficacy and appropriateness of the 2-DOF and 14-DOF models as embedded MPC models, we compare results obtained with each of them on both rigid and granular terrain.  These findings are summarized below.
-
-%% ------------------------------------------------------------
-
-\subsubsection{2-DOF vs. 14-DOF Controllers on Rigid Terrain }\label{sss:Comp1}
-
-%% ------------------------------------------------------------
-
-\subsubsection{2-DOF vs. 14-DOF Controllers on Granular Terrain }\label{sss:Comp2}
-
-%% ------------------------------------------------------------
-
-\subsubsection{2-DOF Controller on Rigid vs. Granular Terrain}\label{sss:Comp3}
-
-%% ------------------------------------------------------------
-
-\subsubsection{14-DOF Controller on Rigid vs. Granular Terrain }\label{sss:Comp4}
+Just from looking at the lateral accelerations, we see the forces the vehicle experiences from driving on granular terrain can be much different than forces on simple rigid ground. Even examining Figs.~\ref{fig:ObstacleField1Trajectories} and \ref{fig:ObstacleField2Trajectories}, the vehicle navigating on granular terrain does not turn as sharply for a given steering command as the vehicle does on rigid ground terrain. To really understand the differing behavior between a vehicle driving on rigid terrain to a vehicle driving on granular terrain, a parametric study should be performed analyzing the vehicle driving on a variety of granular terrain with different granular parameters. 
 
 %% ============================================================
 
 \section{CONCLUSIONS}\label{s:conclusion}
 
+In this study, using the multibody physics API {\CHRONO} a simulation has been developed of a HMMWV driving through a user specified obstacle field towards a defined target location. Within this simulation, a MPC LIDAR based local obstacle avoidance controller has been implemented to navigate the vehicle around obstacles as it encounters them. The controller itself uses a simplified analytical vehicle model to predict the actual controlled {\CHRONO} vehicle states within a finite prediction horizon in order to determine the optimal path and steering sequence forward from the current vehicle state. A novel method of simulating granular terrain for this large obstacle field was developed and implemented for this study. Two seperate MPC Algorithms were developed, one that uses a 2DOF vehicle model to predict {\CHRONO} vehicle states and a 14DOF model to do the same. These two controllers were used to navigate a {\CHRONO} HMMWV through two obstacle courses on both rigid terrain and then on granular terrain. The results were compared to understand what if any improvements need to be made to the MPC LIDAR based local obstacle avoidance controller to successfully control a vehicle on granular terrain. 
+
+As in \cite{ModelFidelity2016}, the controller with the 14DOF internal vehicle model performs marginally better than the controller with the 2DOF internal vehicle model in all situations. However, tests with the 2DOF controller prove that this controller can still successfully navigate a vehicle through an obstacle field when the vehicle is moving at non-extreme speeds. Using the 2DOF controller also allows for faster calculation of optimal steering sequences which is required for eventual realtime implementation. Both of the controllers navigated the vehicle worse on granular terrain than on rigid ground terrain, but this is expected since the internal vehicle controller models were derived using rigid ground assumptions. This study also highlights the complexities introoduced to vehicle modeling when the terrain is no longer rigid ground. Looking at the vehicle trajectories and lateral accelerations on granular terrain, there are clear differences in tire ground interactions when the terrain is now granular. The terrain granular parameters affect the turning characteristics of the vehicle, acceleration abilities, and overall vehicle dynamic performance which is not accounted for with the currently used 2DOF and 14DOF analytical vehicle models. 
+
+The results of this study are promising. Since the 2DOF controller is able to navigate the {\CHRONO} vehicle on this study's granualr terrain, then there is some small set of granular terrain on which a 2DOF model is sufficient for predicting vehicle performance well enough to guide the vehicle successfully and safely to a target point. However, these results also emphasize the need for future research and studies relating to vehicle simulation on granular terrain. This same sort of study should be performed parametrically on a comprehensive set of different granular terrains to understand the difference between vehicle performance on rigid ground and granular terrain. From there, a new intermediate analytical model should be research and developed that is not as complex as the 14DOF model but does take into account granuler parameters such as the friction angle. 
 
 %% ============================================================
 
