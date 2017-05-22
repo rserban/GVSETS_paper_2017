@@ -164,78 +164,44 @@ The remainder of this paper is organized as follows.  In Section~\ref{s:backgrou
 
 \section{BACKGROUND}\label{s:background}
 
-\subsection{MPC Based Local Obstacle Avoidance }\label{ss:MPC}
+\subsection{MPC Based Local Obstacle Avoidance }\label{MPC}
+
+\begin{figure*}
+	\centering
+	\includegraphics[width=0.6\textwidth]{Figs/MPCBlockDiagram.png}
+	\caption{{\small Schematic of MPC LIDAR-Based Constant Speed Local Obstacle Avoidance Controller}}    
+	\label{fig:MPC_schematic}
+\end{figure*}
+
 The concept of MPC is to use an internal model of the system one desires to control to predict and optimize future system behavior from the current system state and inputs. The system behavior is predicted over some defined finite time horizon and the optimal control sequence over the prediction horizon is output. The control sequence is executed for an execution time smaller than the prediction horizon, and the whole process is repeated. The repetition of this process over time creates a feedback loop which continually controls the system, pushing it towards an optimal path.
 
 For this study, the system to be controlled is an AGV. Consider an AGV located in a level environment without roads or any other structures to guide the AGV’s motion. The AGV also has a known global target position. Between the target position and the current vehicle position there may or may not be obstacles of unknown size. Using the MPC formulation outlined in~\cite{ModelFidelity2016}, the vehicle can navigate from the current position to the provided target position while avoiding obstacles as they are encountered. Obstacle information is assumed to be unknown a priori and only obtained through a planar LIDAR sensor. The MPC schematic is presented in Fig.~\ref{fig:MPC_schematic}.
 %
+
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/MPCBlockDiagram.png}
-	\caption{\small Schematic of MPC LIDAR-Based Constant Speed Local Obstacle Avoidance Controller.  \todo[inline]{adjust sizing of schematic text}}    
-	\label{fig:MPC_schematic}
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[width=0.8\columnwidth]{Figs/incomingObst.png}
+		\caption{{\small 3D Visualization of LIDAR Encountering Obstacle}}   
+		\label{fig:obstacle_field_3D}
+	\end{subfigure}
+
+	\hfill
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{Figs/obstLIDAR.png}
+		\caption{\small LIDAR Sensed Safe Area}   
+		\label{fig:obstacle_field_LIDAR}
+	\end{subfigure}
+	\caption{\small Sample obstacle field and LIDAR output}
+	\label{fig:LIDARExample}
 \end{figure}
 
-The planar LIDAR sensor is mounted at the front center location of the vehicle. The LIDAR sensor returns the closest obstacle boundary in all radial directions of the sensor at an angular resolution ε. The LIDAR sensor has a maximum range past which it cannot sense any obstacles. Therefore, if the closest obstacle boundary is greater than the LIDAR radius $R_{LIDAR}$ then the sensor returns $R_{LIDAR}$. The LIDAR sensor range is [0$^o$,180$^o$] with 90$^o$ being the vehicle heading direction. Since for this study the AGV is driving along level ground, whether granular or rigid, the planar LIDAR sensor is sufficient. The LIDAR is assumed to have no delay and zero noise. Therefore, the LIDAR sensor can instantaneously generate a safe area polygon assembled from the returned points from the LIDAR. An overhead view of the AGV encountering an obstacle and the generated LIDAR safe area polygon are presented in Fig.~\ref{fig:obstacle_field}. 
+The planar LIDAR sensor is mounted at the front center location of the vehicle. The LIDAR sensor returns the closest obstacle boundary in all radial directions of the sensor at an angular resolution ε. The LIDAR sensor has a maximum range past which it cannot sense any obstacles. Therefore, if the closest obstacle boundary is greater than the LIDAR radius $R_{LIDAR}$ then the sensor returns $R_{LIDAR}$. The LIDAR sensor range is [0$^o$,180$^o$] with 90$^o$ being the vehicle heading direction. Since for this study the AGV is driving along level ground, whether granular or rigid, the planar LIDAR sensor is sufficient. The LIDAR is assumed to have no delay and zero noise. Therefore, the LIDAR sensor can instantaneously generate a safe area polygon assembled from the returned points from the LIDAR. An overhead view of the AGV encountering an obstacle and the generated LIDAR safe area polygon are presented in Fig.~\ref{fig:LIDARExample}. 
 %
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/LIDARExample.png}
-	\caption{\small Sample obstacle field and LIDAR output.}    
-	\label{fig:obstacle_field}
-\end{figure}
-	
+
 The outputs of the MPC algorithm are the steering signals only for this simulation. As shown in Fig.~\ref{fig:MPC_schematic}, the MPC algorithm is made up of the internal controller vehicle model, the cost function and constraints, and the dynamic optimizer. The internal controller vehicle model predicts the future states of the AGV for a given steering sequence and is of interest in this work. For this study, the internal controller vehicle model is varied from test to test between a 2-DOF vehicle model and a 14-DOF vehicle model, detailed in further sections. The cost functions and constraints are used to formulate the optimal control problem with the equations from the vehicle model. The dynamic optimizer then solves the optimal control problem. For the purpose of this paper, exhaustive search is used to find the optimal solution to the problem since solution speed is not a primary focus of this paper, but more importantly the ability to find and execute an optimal solution.
-
-The same controller as formulated in~\cite{ModelFidelity2016} is used for this study. The cost function and constraints need to be specified to avoid collisions with obstacles and guarantee vehicle dynamical safety. The optimal control problem solved at each MPC time step is comprised of the following set of equations:
-
-\begin{equation}\label{e:MPCCost}
-J = s_T + wd 
-\end{equation}
-\begin{equation}\label{e:State_ODE}
-\dot{\xi} = v\left[\xi\left(t\right),\zeta\left(t\right)\right] 
-\end{equation}
-\begin{equation}\label{e:InitialStates}
-\xi\left(0\right) = \xi_0 
-\end{equation}
-\begin{equation}\label{e:SafeArea}
-\tilde{S}\left[x\left(t\right),y\left(t\right)\right] \leq0  
-\end{equation}
-\begin{equation}\label{e:SteerLimit}
-\left|\delta_f\left(t\right)\right| \leq\tilde{\delta}_{f,max}\left(U_0\right) 
-\end{equation}
-\begin{equation}\label{e:SteerRateLimit}
-\left|\varsigma_f\left(t\right)\right| \leq\varsigma_{f,max} 
-\end{equation}
-\begin{equation}\label{e:TimeDomain}
-t \in \left[0,T_P\right]
-\end{equation}
-
-Equation~(\ref{e:MPCCost}) defines the cost function for this optimal control problem. This equation is a soft requirement which defines how the separate path possibilities are weighed against each other and how to determine which path is actually optimal. The cost function is comprised of two terms defined by the following
-%
-\begin{equation}\label{e:DistanceCost}
-s_T = \sqrt{\left[ x_G - x\left(T_P\right)\right]^2 + \left[y_G - y\left(T_P\right)\right]^2 }
-\end{equation}
-\begin{equation}\label{e:TurningCost}
-d = \int \limits_0^{T_G} \left|\varsigma\left(t\right)\right| dt 
-\end{equation}
-%
-$s_{T}$ seeks to minimize the distance between the prediction end location and the target position. Refer to \todo{Figure XX} for a visualization of this magnitude. A prediction path that predicts the vehicle at the closest location to the target will have the smaller $s_{T}$ term. The second term $d$ aims to minimize the change in steering angle so that smoother, straighter paths are more favorable than windy paths.
-
-Equations~(\ref{e:State_ODE}-\ref{e:TimeDomain}) are the constraint equations for this optimal control problem which represent hard requirements for vehicle safety and avoiding collisions. Any paths that violate these constraints are not considered safe paths and are eliminated as potential options in this prediction window. Equation~(\ref{e:State_ODE}) defines a set of differential equations that describe the internal controller vehicle model. These equations are presented further in the paper or left for formulation in references. Equation~(\ref{e:InitialStates}) presents the initial states needed to solve Eq.~(\ref{e:State_ODE}) for potential paths. 
-
-Equation~(\ref{e:SafeArea}) defines a safe area polygon. All points along paths found from Eqs.~(\ref{e:State_ODE})-(\ref{e:InitialStates}) must fall inside of this safe area polygon. This safe area is constructed from LIDAR points. An additional safety buffer is added to account for vehicle size and prevent corners of the vehicle from colliding with an obstacle. 
-
-Equation~(\ref{e:SteerLimit}) imposes a limit on maximum steering angle for the vehicle based on vehicle speed. This value is obtained from a lookup table which can be generated either experimentally or from simulation. Equation~(\ref{e:SteerRateLimit}) imposes a maximum limit on steering rate. Equation~(\ref{e:TimeDomain}) defines the time limits over which this optimal control problem is solved.
-
-Equation ~(\ref{e:State_ODE}) as noted above refers to an analytical vehicle model expressed as a set of differential equations. This is how the controller is able to predict vehicle performance within the prediction horizon. The accuracy of the internal vehicle controller model should directly influence the driven vehicle's controlled performance. If the internal vehicle controller model poorly predicts a vehicle's response to inputs from the driver or the environment, then these deficciencies will be witnessed when attempting to control the driven vehicle. In the case of this study, an internal vehicle controller model that poorly represents the driven vehicle may predict that a specified steering sequence will navigate the driven vehicle around an approaching obstacle, but due to this descrepancy the driven vehicle may not turn quickly enough and collide with the obstacle. However, using an internal vehicle controller model that is highly complex may provide accurate trajectory and vehicle response predictions, but the time required to solve an optimal control problem with this complicated set of differential equations is much higher than using a simpler internal vehicle controller model. Since the eventual goal is physical implementation of this controller, an ideal controller would not just accurately predict vehicle responses but also do it quick enough to insure vehicle safety. Therefore for this study the driven vehicle that will be controlled is a HMMWV developed in {\CHRONO}. This vehicle will be controlled using two separately developed controllers. The first controller uses a simple 2 DOF vehicle model to predict the {\CHRONO}  HMMWV trajectory for different series of steering sequences and is presented in detail in Section~\ref{sss:2DOFModel}. The second controller uses a complex 14 DOF vehicle model to predict vehicle states for different series of steering sequences. Once again, this study will test each of these controller's abilities to successfully navigate the driven {\CHRONO}  HMMWV vehicle through two obstacle fields on rigid flat terrain and then granular terrain. The driven {\CHRONO} HMMWV vehicle is presented in detail in Section~\ref{ss:FullVehicleModel}. Exhaustive search space is used to solve the optimal control problem in each time step since the goal of this study is to analyze the vehicle's ability to be successfully navigated through an obstacle field and not how quickly the problem can be solved. A sample visualization of the different predicted trajectories from the 2 DOF model is presented in Fig.~\ref{fig:PossiblePaths}. A point in polygon algorithm is used to determine which trajectories remain inside of the safe area polygon and therefore should be compared to the other possibilities using Eq.~(\ref{e:MPCCost}).
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/PathPossibilities.png}
-	\caption{\small Potential Paths predicted by 2 DOF Internal Vehicle Controller Model}  
-	\label{fig:PossiblePaths}
-\end{figure}
 
 %% ============================================================
 
@@ -317,6 +283,67 @@ For mobility studies on deformable terrain, provided that the tire inflation pre
 
 \subsection{Relocating Granular Patch }\label{ss:Patch}
 
+%%============================================================
+
+\subsection{{\CHRONO} Multibody Physics Package}\label{ss:Chrono}
+
+The physics modeling and simulation capabilities are provided by the multiphysics open-source package {\CHRONO}~\cite{Chrono2016}. The core functionality of {\CHRONO} provides support for the modeling, simulation, and visualization of rigid multibody systems, with additional capabilities offered through optional modules. These modules provide support for additional classes of problems (e.g., finite element analysis and fluid-solid interaction), for modeling and simulation of specialized systems (such as ground vehicles and granular dynamics problems), or provide specialized parallel computing algorithms (multi-core, GPU, and distributed) for large-scale simulations.
+%%============================================================
+
+\subsection{Implemented MPC LIDAR Based Local Obstacle Avoidance}\label{ss:MPCImplementation}
+
+The MPC controller as formulated in~\cite{ModelFidelity2016} is used for this study. The cost function and constraints need to be specified to avoid collisions with obstacles and guarantee vehicle dynamical safety. The optimal control problem solved at each MPC time step is comprised of the following set of equations:
+
+\begin{equation}\label{e:MPCCost}
+J = s_T + wd 
+\end{equation}
+\begin{equation}\label{e:State_ODE}
+\dot{\xi} = v\left[\xi\left(t\right),\zeta\left(t\right)\right] 
+\end{equation}
+\begin{equation}\label{e:InitialStates}
+\xi\left(0\right) = \xi_0 
+\end{equation}
+\begin{equation}\label{e:SafeArea}
+\tilde{S}\left[x\left(t\right),y\left(t\right)\right] \leq0  
+\end{equation}
+\begin{equation}\label{e:SteerLimit}
+\left|\delta_f\left(t\right)\right| \leq\tilde{\delta}_{f,max}\left(U_0\right) 
+\end{equation}
+\begin{equation}\label{e:SteerRateLimit}
+\left|\varsigma_f\left(t\right)\right| \leq\varsigma_{f,max} 
+\end{equation}
+\begin{equation}\label{e:TimeDomain}
+t \in \left[0,T_P\right]
+\end{equation}
+
+Equation~(\ref{e:MPCCost}) defines the cost function for this optimal control problem. This equation is a soft requirement which defines how the separate path possibilities are weighed against each other and how to determine which path is actually optimal. The cost function is comprised of two terms defined by the following
+%
+\begin{equation}\label{e:DistanceCost}
+s_T = \sqrt{\left[ x_G - x\left(T_P\right)\right]^2 + \left[y_G - y\left(T_P\right)\right]^2 }
+\end{equation}
+\begin{equation}\label{e:TurningCost}
+d = \int \limits_0^{T_G} \left|\varsigma\left(t\right)\right| dt 
+\end{equation}
+%
+$s_{T}$ seeks to minimize the distance between the prediction end location and the target position. A prediction path that predicts the vehicle at the closest location to the target will have the smaller $s_{T}$ term. The second term $d$ aims to minimize the change in steering angle so that smoother, straighter paths are more favorable than windy paths.
+
+Equations~(\ref{e:State_ODE}-\ref{e:TimeDomain}) are the constraint equations for this optimal control problem which represent hard requirements for vehicle safety and avoiding collisions. Any paths that violate these constraints are not considered safe paths and are eliminated as potential options in this prediction window. Equation~(\ref{e:State_ODE}) defines a set of differential equations that describe the internal controller vehicle model. These equations are presented further in the paper or left for formulation in references. Equation~(\ref{e:InitialStates}) presents the initial states needed to solve Eq.~(\ref{e:State_ODE}) for potential paths. 
+
+Equation~(\ref{e:SafeArea}) defines a safe area polygon. All points along paths found from Eqs.~(\ref{e:State_ODE})-(\ref{e:InitialStates}) must fall inside of this safe area polygon. This safe area is constructed from LIDAR points. An additional safety buffer is added to account for vehicle size and prevent corners of the vehicle from colliding with an obstacle. 
+
+Equation~(\ref{e:SteerLimit}) imposes a limit on maximum steering angle for the vehicle based on vehicle speed. This value is obtained from a lookup table which can be generated either experimentally or from simulation. Equation~(\ref{e:SteerRateLimit}) imposes a maximum limit on steering rate. Equation~(\ref{e:TimeDomain}) defines the time limits over which this optimal control problem is solved.
+
+Equation ~(\ref{e:State_ODE}) as noted above refers to an analytical vehicle model expressed as a set of differential equations. This is how the controller is able to predict vehicle performance within the prediction horizon. The accuracy of the internal vehicle controller model should directly influence the driven vehicle's controlled performance. If the internal vehicle controller model poorly predicts a vehicle's response to inputs from the driver or the environment, then these deficciencies will be witnessed when attempting to control the driven vehicle. In the case of this study, an internal vehicle controller model that poorly represents the driven vehicle may predict that a specified steering sequence will navigate the driven vehicle around an approaching obstacle, but due to this descrepancy the driven vehicle may not turn quickly enough and collide with the obstacle. However, using an internal vehicle controller model that is highly complex may provide accurate trajectory and vehicle response predictions, but the time required to solve an optimal control problem with this complicated set of differential equations is much higher than using a simpler internal vehicle controller model. Since the eventual goal is physical implementation of this controller, an ideal controller would not just accurately predict vehicle responses but also do it quick enough to insure vehicle safety. Therefore for this study the driven vehicle that will be controlled is a HMMWV developed in {\CHRONO}.  This vehicle will be controlled using two separately developed controllers. The first controller uses a simple 2 DOF vehicle model to predict the {\CHRONO}  HMMWV trajectory for different series of steering sequences and is presented in detail in Section~\ref{sss:2DOFModel}. The second controller uses a complex 14 DOF vehicle model to predict vehicle states for different series of steering sequences. Once again, this study will test each of these controller's abilities to successfully navigate the driven {\CHRONO}  HMMWV vehicle through two obstacle fields on rigid flat terrain and then granular terrain. The driven {\CHRONO} HMMWV vehicle is presented in detail in Section~\ref{ss:FullVehicleModel}. Exhaustive search space is used to solve the optimal control problem in each time step since the goal of this study is to analyze the vehicle's ability to be successfully navigated through an obstacle field and not how quickly the problem can be solved. A sample visualization of the different predicted trajectories from the 2 DOF model is presented in Fig.~\ref{fig:PossiblePaths}. A point in polygon algorithm is used to determine which trajectories remain inside of the safe area polygon visualized in Fig.~\ref{fig:obstLIDAR} and therefore should be compared to the other possibilities using Eq.~(\ref{e:MPCCost}).
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/PathPossibilities.png}
+	\caption{\small Potential Paths predicted by 2 DOF Internal Vehicle Controller Model}  
+	\label{fig:PossiblePaths}
+\end{figure}
+
+%% ============================================================
+
 %% ============================================================
 
 \subsection{Internal Controller Vehicle Models}\label{ss:IntModel}
@@ -354,8 +381,6 @@ A visual representation of the 2-DOF model can be found in Fig.~\ref{fig:2DOF}. 
 \end{equation}
 %
 where $F_{y,f}$ and $F_{y,r}$ are the lateral tire forces at the front and rear axles, respectively. $U_0$ and $V$ are the longitudinal speed and lateral speed of the vehicle in the vehicle’s coordinate frame. $\psi$ is the yaw angle and $r$ is the yaw rate. $\left(x,y\right)$ represent the front center location of the vehicle expressed in global coordinates. $M$ is vehicle mass, $I_{zz}$ is the moment of inertia of the vehicle, $L_f$ is the distance from the front axle to the vehicle CoG, and $L_r$ is the distance from the rear axle to the vehicle CoG.
-\todo[inline]{ Add more here }
-
 
 %% ------------------------------------------------------------
 
@@ -364,11 +389,8 @@ A fourteen DOF model is often used in studies such as these to test the obstacle
 
 The fourteen DOF vehicle model consists of one sprung mass connected above four unsprung masses~\cite{RollStudies2007}. The sprung mass is allowed to roll, pitch, and yaw while also displacing laterally, vertically, and longitudinally. This sprung mass contributes six DOF to the model. Each of the four wheels are allowed to bounce vertically and rotate about the wheel horizontal axis. The front two wheels are also free to steer. Each wheel then contributes two DOF to the fourteen DOF model. The equations used for this model as well as their developments can be found in~\cite{RollStudies2007}.
 
-The Pacejka Magic Formula is used to calculate the ground tire interaction forces in the fourteen DOF vehicle model. On rigid terrain, this is an accurate and valid assumption. However, based on how the Pacejka Magic Formula is derived and coefficients experimentally obtained, using the Magic Formula to estimate tire forces on granular terrain is not a valid assumption. However, this estimation may provide tire forces that are close enough to still allow the vehicle to successfully navigate the obstacle field safely. 
-\todo[inline]{ finish this paragraph}
-
 %% ============================================================
-\subsection{Open Loop Comparisons }\label{ss:OpenLoop}
+%\subsection{Open Loop Comparisons }\label{ss:OpenLoop}
 
 %% ============================================================
 
