@@ -145,7 +145,6 @@
 %% ============================================================
 
 \section{INTRODUCTION}\label{s:introduction}
-\todo[inline]{\color{red}{0.5 pages}}
 
 Obstacle avoidance is a crucial capability for Autonomous Ground Vehicles (AGVs) of the future. This refers to a ground vehicle’s ability to sense its surrounding environment, develop an optimal path around the obstacles in the environment, generate optimal control commands to satisfy that path, and physically navigate the vehicle around the obstacles safely and to a desired endpoint. Safety is defined as avoiding collisions as well as enforcing limitations on excessive sideslip or tire lift-off. An ideal control algorithm is one that is capable of pushing a vehicle to its performance limits by using knowledge of its dynamic capabilities and surrounding environmental conditions while still enforcing the strict safety requirements. Though previous work has been accomplished testing a Model Predictive Control (MPC) algorithm for obstacle avoidance on wheeled vehicles, more work is required to test the fidelity of this algorithm and determine where improvements are needed. One area in which this algorithm has yet to be tested is its ability to control a wheeled vehicle on granular terrain. Up to this point, the assumption that the terrain is rigid and flat for testing has been used. However, when rigid flat terrain is replaced with granular terrain, such as soil or sand, how does the MPC algorithm perform?  Do the current most commonly used vehicle models perform successfully with the MPC algorithm on granular terrain? The proposed research upon previous published research to evaluate the robustness and validity of the MPC algorithm with different vehicle models in an environment more similar to what an off-road military vehicle would experience in combat. This testing is done via numerical simulation.
 
@@ -244,34 +243,75 @@ Equation ~(\ref{e:State_ODE}) as noted above refers to an analytical vehicle mod
 
 The physics modeling and simulation capabilities are provided by the multiphysics open-source package {\CHRONO}~\cite{Chrono2016}. The core functionality of {\CHRONO} provides support for the modeling, simulation, and visualization of rigid multibody systems, with additional capabilities offered through optional modules. These modules provide support for additional classes of problems (e.g., finite element analysis and fluid-solid interaction), for modeling and simulation of specialized systems (such as ground vehicles and granular dynamics problems), or provide specialized parallel computing algorithms (multi-core, GPU, and distributed) for large-scale simulations.
 
-\todo[inline]{More about Chrono: design, availability, existing modules.\\Short description of Chrono::Parallel}
-
 %% ------------------------------------------------------------
 
 \subsubsection{Vehicle Modeling}\label{sss:Chrono_Vehicle}
 	
-Built as a {\CHRONO} extension module, {\ChronoVehicle}~\cite{TR2016-10RaduChronoVehicle} is a C++ middleware library focused on the modeling, simulation, and visualization of ground vehicles.
+Built as a {\CHRONO} extension module, {\ChronoVehicle}~\cite{ChronoVehicle_TR} is a C++ middleware library focused on the modeling, simulation, and visualization of ground vehicles.
 %
 {\ChronoVehicle} provides a collection of templates for various topologies of both wheeled and tracked vehicle subsystems, as well as support for modeling of rigid, flexible, and granular terrain, support for closed-loop and interactive driver models, and run-time and off-line visualization of simulation results.
 
+Modeling of vehicle systems is done in a modular fashion, with a vehicle defined as an assembly of instances of various subsystems (suspension, steering, driveline, etc.).  Flexibility in modeling is provided by adopting a template-based design. In {\ChronoVehicle}, templates are parameterized models that define a particular implementation of a vehicle subsystem. As such, a template defines the basic modeling elements (bodies, joints, force elements), imposes the subsystem topology, prescribes the design parameters, and implements the common functionality for a given type of subsystem (e.g., suspension) particularized to a specific template (e.g., double wishbone). Finally, an instantiation of such a template is obtained by specifying the template parameters (hardpoints, joint directions, inertial properties, contact material properties, etc.) for a concrete vehicle (e.g., the HMMWV front suspension).
 
-\todo[inline]{More about Chrono::Vehicle (template-based design, supported topologies, driver models)...}
+For wheeled vehicle systems, templates are provided for the following subsystems:
+{\em suspension} (double wishbone, reduced double wishbone using distance constraints, multi-link, solid-axle, McPhearson strut, semi-trailing arm);
+{\em steering} (Pitman arm, rack-and-pinion);
+{\em driveline} (2WD and 4WD shaft-based using specialized {\CHRONO} modeling elements, simplified kinematic driveline);
+{\em wheel} (simply a carrier for additional mass and inertia appended to the suspension's spindle body);
+{\em brake} (simple model using a constant torque modulated by the driver braking input).
+
+In addition, {\ChronoVehicle} offers a variety of tire models and associated templates, ranging from rigid tires, to empirical and semi-empirical models (such as Pacejka and Fiala), to fully deformable tires modeled with finite elements (using either an Absolute Nodal Coordinate Formulation or a co-rotational formulation).  Driver inputs (steering, throttle, and braking) are provided from a {\em driver} subsystem with available options in {ChronoVehicle} including both open-loop (interactive or data-driven) and closed-loop (e.g., path-following based on PID controllers).
 
 %% ------------------------------------------------------------
 
-\subsubsection{Granular Mechanics }\label{sss:GranMech}
+\subsubsection{Granular Mechanics}\label{sss:GranMech}
 
 In this work, the focus is on modeling and simulating the terrain and the tire-terrain interaction using high-fidelity, fully-resolved granular dynamics simulations, employing the so-called Discrete element Method (DEM).  Meaningful mobility simulations require large enough terrain patches and small enough particle dimensions that result in DEM problems involving frictional contact with millions of degrees of freedom.
 
-\todo[inline]{More about DEM (NSC and SMC)...}
+Unlike continuum-based deformable terrain modeling approaches, DEM treats all component particles separately, as distinct entities, by maintaining and advancing in time their states while taking into account pair-wise interaction forces due to frictional contact.
+%
+Broadly speaking, computational methods for DEM at this scale can be categorized into two classes: penalty-based (also known as a compliant-body approach; denoted here by DEM-P) and complementarity-based (also known as a rigid-body approach; denoted here by DEM-C).  While differing in the underlying formulation employed for modeling and generating the normal and tangential forces at the contact interface, and thus leading to different mathematical models and different problem sizes, both methods rely crucially on efficient methods for proximity calculation. This common algorithmic step provides a complete geometric characterization of the interaction between neighboring bodies, taking into account the current system state and specification of the contact shapes associated with all interacting bodies.
+
+The DEM-C class of methods for granular dynamics fully embraces the rigid body assumption and formulates the frictional contact problem by imposing non-penetration conditions which result in unilateral constraints between each pair of interacting shapes.  The derivation begins by defining a so-called {\em gap function} $\Phi_i$ which describes the separation between the two shapes involved in a potential contact $i$ in the current active contact set. Then, a complementarity condition is imposed stating that either the distance between the two shapes is greater than zero, in which case the normal force is zero, or vice-versa; i.e., if the distance is zero, the contact force is nonzero.  Introducing the Coulomb friction model via the principle of maximum dissipation~\cite{moreau2011unilateral}, the problem can be formulated as a Differential Variational Inequality problem which can be converted to a cone-complementarity problem.  This is further transformed into a quadratic optimization problem with conic constraints which can then be solved using projected iterative optimization schemes.
+%
+See~\cite{DVI_TR} for additional details on the DEM-C formulation implemented in {\CHRONO}.
+
+Penalty methods begin with a relaxation of the rigid body assumption~\cite{cundall71}. A regularization approach, DEM-P assumes local body deformation at the contact point. Employing the finite element method to characterize this deformation would incur a stiff computational cost. Instead, an approximation is employed, using information generated during the collision detection stage of the solution, and the local body deformation is related to the depth of inter-penetration between two otherwise rigid contact shapes. In order to apply results from Hertz contact theory, valid for sphere-sphere interactions, the contact shapes are further approximated by their local radius of curvature at the contact point~\cite{johnson1987contact}.
+%
+This approach yields a general methodology for computing the normal and tangential forces at the contact point.   For granular dynamics via DEM-P, the equations of motion need not be changed. Indeed, normal and tangential contact forces are treated as any external forces and directly factored in the momentum balance.
+%
+For details on the specific DEM-P implementation in {\CHRONO}, see~\cite{fleischmannetalJCND2015}.
+
+In this work, we employed the DEM-P capabilities in {\CHRONO}, leveraging the multi-core, OpenMP-based parallelization features offered by the {\ChronoParallel} module.  However, the general many-body frictional contact approach in {\CHRONO} was modified by restricting the rotational degrees of freedom of the component rigid particles.  This approximation, appropriate for simulation of granular terrain, is justified as follows...
+\todo[inline]{Jon to provide arguments here...  Or should this be moved in a separate subsection under Section 3?}
 
 %%============================================================
 
 \section{TECHNICAL APPROACH AND METHODOLOGY}\label{s:methodology}
 
-\subsection{Chrono Full-Vehicle Model to be Controlled}\label{ss:FullVehicleModel}
+\subsection{Full-Vehicle Multibody Model}\label{ss:FullVehicleModel}
 
-\todo[inline]{Description of the HMMWV Chrono::Vehicle model used as the plant}
+The model to be controlled (the {\em plant}) is a full-vehicle {\ChronoVehicle} model of an HMMWV, which includes multi-body subsystems for the suspensions, steering, driveline, and powertrain, and is available in the {\CHRONO} package.
+
+This vehicle model (see Fig.~\ref{fig:hmmwv}) has a curb weight of $2,550$~kg.
+%
+It includes independent front and rear double wishbone suspensions and a Pitman arm steering mechanism. The shock absorber and coil spring, mounted between the lower control arm and the chassis, are modeled with {\CHRONO} nonlinear force elements and include the effects of bump stops.
+%
+\begin{figure}
+	\centering
+	\includegraphics[width=\columnwidth]{Figs/hmmwv_bodies.png}
+	\caption{\small Full-vehicle HMMWV multibody model.}  
+	\label{fig:hmmwv}
+\end{figure}
+
+The AWD driveline is modeled using {\CHRONO} shaft elements and includes three power splitting elements (a central differential and front/rear differentials), as well as conical gears connected through 1-dimensional shaft elements which carry rotational inertia. 
+%
+The powertrain is also modeled using 1-dimensional shaft elements and includes models for a thermal engine specified through speed-torque maps for power and engine losses, a torque converter specified via maps for the capacity factor and the torque ratio, and an automatic transmission gearbox with three forward gears and a single reverse gear.
+%
+The connection between powertrain and driveline is a force-displacement interface at the driveshaft (with torque applied from the powertrain and angular velocity provided by the driveline).
+
+For mobility studies on deformable terrain, provided that the tire inflation pressure is comparable or larger than the average ground pressure, according to the postulate by Wong~\cite{wong93} the tire can be considered in a so-called {\em rigid regime}.  As such, tire deformation can be ignored and the vehicle's tires modeled using rigid contact shapes.  The HMMWV tire model used here is thus represented by a cylinder with radius $0.467$~m and a width of $0.254$~m.
+
 
 %% ============================================================
 
@@ -542,6 +582,9 @@ The results of this study are promising. Since the 2DOF controller is able to na
 
 \section*{Acknowledgments}
 Support for this research...
+\todo[inline]{Jon, add any grant(s) you need here}
+{\CHRONO} development was supported in part by U.S. Army TARDEC Rapid Innovation Fund grant No. W911NF-13-R-0011, Topic No. 6a, ``Maneuverability Prediction''.
+Support for the development of {\ChronoVehicle} was provided by U.S. Army TARDEC grant W56HZV-08-C-0236.
 
 %% ============================================================
 
