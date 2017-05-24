@@ -94,7 +94,7 @@
 
 \title{\bf\large PERFORMANCE ANALYSIS OF CONSTANT SPEED LOCAL OBSTACLE AVOIDANCE CONTROLLER USING AN MPC ALGORITHM ON GRANULAR TERRAIN}
 
-\newcommand{\FooterTitle}{Performance Analysis of obstacle avoidance algorithm on granular terrain}
+\newcommand{\FooterTitle}{Performance analysis of obstacle avoidance algorithm on granular terrain}
 
 \author{
 	{\bf Nicholas Haraus}\\
@@ -102,12 +102,12 @@
 	Marquette University\\
 	Milwaukee, WI
 	\and
-	{\bf Radu Serban, PhD}\\
+	{\bf Radu Serban}\\
 	Dept. of Mechanical Engineering\\
 	University of Wisconsin - Madison\\
 	Madison, WI
 	\and
-	{\bf Jonathan A. Fleischmann, PhD}\\
+	{\bf Jonathan Fleischmann}\\
 	Dept. of Mechanical Engineering\\
 	Marquette University\\
 	Milwaukee, WI
@@ -158,7 +158,7 @@ Analyze the role of model fidelity of the internal controller model and how it a
 Showcase the potential of controller testing in a high fidelity virtual test environment with {\CHRONO} to assist with initial control algorithm development before physical implementation for vehicular applications.
 \end{enumerate}
 
-The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide overviews of the MPC based local obstacle avoidance algorithm, the {\CHRONO} multiphysics package used as the test environment, and the method of simulating granular terrain in this study. In Section~\ref{s:methodology} we describe the {\ChronoVehicle} HMMWV vehicle model used in this study as the plant model to be controlled and our proposed method for simulating a the vehicle driving on granular terrain over large distances. Then, we introduce the different simplified lower fidelity analytical vehicle models used in the MPC algorithm to predict the /CHRONO vehicle behavior. We also provide descriptions of the test cases run for this study and a summary of the metrics used to compare performance of the various tested combinations. In Section~\ref{s:results} we presents the results of the tests outlined in the previous section as well as perform appropriate comparisons of the tests when the internal controller vehicle model is varied and when the terrain is changed from rigid to granular. Section~\ref{s:conclusion} wraps up the paper and presents potential future work based on the results of this study.
+The remainder of this paper is organized as follows.  In Section~\ref{s:background} we provide overviews of the MPC based local obstacle avoidance algorithm, the {\CHRONO} multiphysics package used as the test environment. In Section~\ref{s:methodology} we describe the {\ChronoVehicle} HMMWV vehicle model used in this study as the plant model to be controlled and our proposed method for simulating a the vehicle driving on granular terrain over large distances. Then, the specific MPC LIDAR based local obstacle avoidance controller used for this study is presented. We introduce the different simplified lower fidelity analytical vehicle models used in the MPC algorithm to predict the /CHRONO vehicle behavior. We also provide descriptions of the test cases run for this study and a summary of the metrics used to compare performance of the various tested combinations. In Section~\ref{s:results} we presents the results of the tests outlined in the previous section as well as perform appropriate comparisons of the tests when the internal controller vehicle model is varied and when the terrain is changed from rigid to granular. Section~\ref{s:conclusion} wraps up the paper and presents potential future work based on the results of this study.
 
 %% ============================================================
 
@@ -247,9 +247,8 @@ Penalty methods begin with a relaxation of the rigid body assumption~\cite{cunda
 This approach yields a general methodology for computing the normal and tangential forces at the contact point.   For granular dynamics via DEM-P, the equations of motion need not be changed. Indeed, normal and tangential contact forces are treated as any external forces and directly factored in the momentum balance.
 %
 For details on the specific DEM-P implementation in {\CHRONO}, see~\cite{fleischmannetalJCND2015}.
-
-In this work, we employed the DEM-P capabilities in {\CHRONO}, leveraging the multi-core, OpenMP-based parallelization features offered by the {\ChronoParallel} module.  However, the general many-body frictional contact approach in {\CHRONO} was modified by restricting the rotational degrees of freedom of the component rigid particles.  This approximation, appropriate for simulation of granular terrain, is justified as follows...
-\todo[inline]{Jon to provide arguments here...  Or should this be moved in a separate subsection under Section 3?}
+%
+In this work, we employed the DEM-P capabilities in {\CHRONO}, leveraging the multi-core, OpenMP-based parallelization features offered by the {\ChronoParallel} module.  
 
 %%============================================================
 
@@ -282,6 +281,17 @@ For mobility studies on deformable terrain, provided that the tire inflation pre
 %% ============================================================
 
 \subsection{Relocating Granular Patch }\label{ss:Patch}
+
+Due to the large-scale nature of the simulations in this study, generating granular particles scattered across the whole obstacle field to simulate granular terrain is both computationally exhausting and unreasonable. The computational times to complete a simulation of this sort of scale would be too large to justify the completion of this sort of study. Instead, a novel mechanism has been developed for this study to address the issue of scale when simulating a ground vehicle traversing over a large granular terrain. Consider an AGV on a large granular terrain of 100 by 100 meters. Since we are primarily interested in the behavior of the vehicle on the terrain and not specifically the terrain behavior itself, we assume only a small patch of granular terrain underneath and around the vehicle actually has a significant effect on vehicle behavior and performance. This idea promoted the development of a relocating granular patch used for this study to allow a vehicle to traverse granular terrain over a large-scale area without the need to generate particles everywhere throughout the terrain area. 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\columnwidth]{Figs/granPatch.png}
+	\caption{\small Relocating Granular Patch that follows the vehicle}  
+	\label{fig:granPatch}
+\end{figure}
+
+This mechanism allows a user to generate granular particles within a specified distance of the vehicle's CoG. Figure~\ref{fig:granPatch} presents the patch of granular terrain underneath the {\CHRONO}  HMMWV that will allow follow the HMMWV. The particles are contained within four rigid walls to prevent particles from escaping the desired terrain area. As the vehicle moves across the terrain, this granular patch maintains granular terrain underneath the vehicle by consistently relocating particles as the become too far away from the vehicle. When the vehicle CoG comes within a certain distance of any of the walls, a band of particles from the opposite end of the granular patch are relocated past the closest wall and all of the walls are shifted in that direction. Each of these relocation steps keeps the vehicle on top of granular terrain at all times. Depending on the vehicle, this granular patch can be resized for both computationally efficiency and to guarantee the vehicle maintains a reasonable distance from the walls to prevent any edge effects. This newly developed method of simulating granular terrain for AGV's is omnidirectional in the ground plane, allowing the vehicle to move in any direction while the terrain patch relocates and responds to that movement. This method of granular terrain mobility allows then the user to specify parameters of the particles and thus allows for simulation of a vehicle over a largely customizable flat terrain.
 
 %%============================================================
 
@@ -344,8 +354,6 @@ Equation ~(\ref{e:State_ODE}) as noted above refers to an analytical vehicle mod
 
 %% ============================================================
 
-%% ============================================================
-
 \subsection{Internal Controller Vehicle Models}\label{ss:IntModel}
 
 The vehicle models embedded in the MPC are simplifications of the full, multi-body based, {\CHRONO} wheeled vehicle model which is being controlled.  We consider two such models, providing different levels of fidelity, as described below.
@@ -354,13 +362,6 @@ The vehicle models embedded in the MPC are simplifications of the full, multi-bo
 
 \subsubsection{Two DOF Vehicle Model}\label{sss:2DOFModel}
 The standard vehicle model used in newly developed MPC obstacle avoidance algorithms such as~\cite{ModelFidelity2016} is the 2-DOF vehicle model. These models normally either assume constant cornering stiffness or the nonlinear Pacejka Magic Formula Tire Model~\cite{foo} to predict the ground tire interaction forces. For this study and due to the availability of experimental data, the Pacejka Magic Formula is used to predict tire forces in the vehicle models.   
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/no-image.png}
-	\caption{\small Two DOF Vehicle Model}  
-	\label{fig:2DOF}
-\end{figure}
 
 A visual representation of the 2-DOF model can be found in Fig.~\ref{fig:2DOF}. The two DOF model is described by the following first-order ordinary differential equations:
 
@@ -381,6 +382,13 @@ A visual representation of the 2-DOF model can be found in Fig.~\ref{fig:2DOF}. 
 \end{equation}
 %
 where $F_{y,f}$ and $F_{y,r}$ are the lateral tire forces at the front and rear axles, respectively. $U_0$ and $V$ are the longitudinal speed and lateral speed of the vehicle in the vehicle’s coordinate frame. $\psi$ is the yaw angle and $r$ is the yaw rate. $\left(x,y\right)$ represent the front center location of the vehicle expressed in global coordinates. $M$ is vehicle mass, $I_{zz}$ is the moment of inertia of the vehicle, $L_f$ is the distance from the front axle to the vehicle CoG, and $L_r$ is the distance from the rear axle to the vehicle CoG.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.8\columnwidth]{Figs/2DOF_Stein.png}
+	\caption{\small Two DOF Vehicle Model \cite{ModelFidelity2016}}  
+	\label{fig:2DOF}
+\end{figure}
 
 %% ------------------------------------------------------------
 
@@ -603,8 +611,6 @@ The results of this study are promising. Since the 2DOF controller is able to na
 %% ============================================================
 
 \section*{Acknowledgments}
-Support for this research...
-\todo[inline]{Jon, add any grant(s) you need here}
 {\CHRONO} development was supported in part by U.S. Army TARDEC Rapid Innovation Fund grant No. W911NF-13-R-0011, Topic No. 6a, ``Maneuverability Prediction''.
 Support for the development of {\ChronoVehicle} was provided by U.S. Army TARDEC grant W56HZV-08-C-0236.
 
