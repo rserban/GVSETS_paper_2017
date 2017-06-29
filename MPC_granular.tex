@@ -187,7 +187,6 @@ For this study, the system to be controlled is an AGV. Consider an AGV located i
 		\caption{{\small 3D Visualization of LIDAR Encountering Obstacle}}   
 		\label{fig:obstacle_field_3D}
 	\end{subfigure}
-
 	\hfill
 	\begin{subfigure}[b]{\columnwidth}
 		\centering
@@ -216,7 +215,7 @@ The physics modeling and simulation capabilities are provided by the multiphysic
 
 \subsubsection{Vehicle Modeling}\label{sss:Chrono_Vehicle}
 	
-Built as a {\CHRONO} extension module, {\ChronoVehicle}~\cite{ChronoVehicle_TR} is a C++ middleware library focused on the modeling, simulation, and visualization of ground vehicles.
+Built as a {\CHRONO} extension module, {\ChronoVehicle}~\cite{ChronoVehicle_paper} is a C++ middleware library focused on the modeling, simulation, and visualization of ground vehicles.
 %
 {\ChronoVehicle} provides a collection of templates for various topologies of both wheeled and tracked vehicle subsystems, as well as support for modeling of rigid, flexible, and granular terrain, support for closed-loop and interactive driver models, and run-time and off-line visualization of simulation results.
 
@@ -409,7 +408,7 @@ The 14-DOF vehicle model consists of one sprung mass connected above four unspru
 %% ============================================================
 
 \subsection{Evaluation Metrics}\label{ss:Metrics}
-Five evaluation metrics will be used to compare one test performance to the other. First, all test runs will be compared based on the time to reach the target $T_{target}$. Tests on the same terrain can be compared with this metric to determine which controller leads the vehicle to the target point quickest. Second, the closest distance the vehicle reaches to any obstacle $d_{min}$ will be measured. Third, the control effort will be calculated and compared between test cases. The better test case will have a lower controller effort value. Finally, the maximum and average lateral accelerations will be calculated and compared. The accelerations are calculated at the driver's position in the chassis. Using the DEM-P method of simulation results in noisy acceleration data. To address this, acceleration data is filtered to remove noise. These five evaluation metrics provide a logical method for comparing one test case to another whether two test cases are on different terrain, have different analytical controller models, or both. 
+Five evaluation metrics will be used to compare one test performance to the other. First, all test runs will be compared based on the time to reach the target, $T_{target}$. Tests on the same terrain can be compared with this metric to determine which controller leads the vehicle to the target point quickest. Second, the closest distance the vehicle reaches to any obstacle, $d_{min}$, will be measured. Third, the control effort will be calculated and compared between test cases. The better test case will have a lower controller effort value. Finally, the maximum and average lateral accelerations will be calculated and compared. The accelerations are calculated at the driver's position in the chassis. Using the DEM-P method of simulation results in noisy acceleration data. To address this, acceleration data is filtered to remove noise. These five evaluation metrics provide a consistent methodology for comparing one test case with another, regardless of the terrain type and underlying analytical controller model.
 
 %% ============================================================
 
@@ -436,65 +435,70 @@ Five evaluation metrics will be used to compare one test performance to the othe
 \label{t:TestMatrix}
 \end{table}
 
-Simulations on both rigid and granular terrain were compared to understand how the controller performs on non-ideal surfaces.  The two internal controller vehicle models to be studied in these tests are the previously described 2-DOF and 14-DOF vehicle models. Aside from changing the internal controller vehicle model from study to study, the rest of the controller will remain the same. Referring to Table~\ref{t:TestMatrix}, Tests 1 and 2 will be compared to understand how model fidelity influences controller performance on rigid flat terrain. Tests 3 and 4 will be compared to again understand the role of model fidelity in the MPC controller on granular terrain. Tests 1 and 3 will be compared to understand how the same controller performs differently on granular terrain as opposed to rigid flat terrain. Similar comparisons will be made between Tests 2 and 4. Each of the tests will consist of one run on two different obstacle fields created to target the controller’s ability to navigate the vehicle through certain obstacle combinations.
+Simulations on both rigid and granular terrain were compared to understand how the controller performs on non-ideal surfaces.  The two internal controller vehicle models studied in these tests were the previously described 2-DOF and 14-DOF vehicle models. All other controller parameters were kept unchanged over all tests. Referring to Table~\ref{t:TestMatrix}, the effect of model fidelity on controller performance was gauged by comparing test 1 with 2 and test 3 with 4, for rigid flat and granular terrain, respectively.
+%%
+Similarly, comparing test 1 with 3 and test 2 and 4 allowed evaluating the performance of each internal vehicle model on rigid and granular terrain.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\columnwidth]{Figs/ObstacleField1.png}
-	\caption{\small Obstacle Field 1}  
-	\label{fig:Obst1}
+	\begin{subfigure}[b]{0.49\columnwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Figs/ObstacleField1.png}
+		\caption{{\small Field 1}}   
+		\label{fig:Obst1}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.49\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{Figs/ObstacleField2.png}
+		\caption{\small Field 2}   
+		\label{fig:Obst2}
+	\end{subfigure}
+	\caption{\small Obstacle fields.}
+	\label{fig:Obst}
 \end{figure}
 
-\begin{table}
-\begin{center}
-	\begin{tabular}{||c|c|c|c||} 
-		\hline
-		& x & y & Radius\\
-		\hline
-		Target Location  & 200.0 & 0.0 & -\\ 
-		\hline
-		Obstacle 1 & 100.0 & 0.0 & 15.0\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Obstacle Field 1 Summary}
-\label{t:Obst1Summary}
-\end{table}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Figs/ObstacleField2.png}
-	\caption{\small Obstacle Field 2}   
-	\label{fig:Obst2}
-\end{figure}
+Each of the above four tests consisted of runs on two fields with different obstacle distributions. 
+%%
+The first one, depicted in Fig.~\ref{fig:Obst1}, contains a single large circular obstacle located along the initial heading of the vehicle, with the target location at a large distance behind the obstacle. 
+%%
+The second obstacle field (see Fig.~\ref{fig:Obst2}) consists of four circular obstacles of varying sizes placed in the vehicle's initial heading direction, and provides a more realistic obstacle-avoidance scenario.
+%%
+Table~\ref{t:ObstSummary} summarizes the obstacle locations and dimensions, as well as the target location for the above two scenarios.
 
 \begin{table}
-\begin{center}
-	\begin{tabular}{||c|c|c|c||} 
-		\hline
-		& x & y & Radius\\
-		\hline
-		Target Location  & 550.0 & 0.0 & -\\ 
-		\hline
-		Obstacle 1 & 100.0 & 0.0 & 15.0\\
-		\hline
-		Obstacle 2 & 200.0 & -50.0 & 30.0\\
-		\hline
-		Obstacle 3 & 300.0 & 55.0 & 30.0\\
-		\hline
-		Obstacle 4 & 425.0 & 0.0 & 50.0\\
-		\hline
-	\end{tabular}
-\end{center}
-\caption{Obstacle Field 2 Summary}
-\label{t:Obst2Summary}
+	\begin{center}
+		\begin{tabular}{||c|c|c|c||} 
+			
+			\hline
+			& x & y & Radius\\
+			& (m) & (m) & (m)\\
+			\hline\hline
+			\multicolumn{4}{||c||}{Field 1} \\
+			\hline
+			Target Location  & 200.0 & 0.0 & -\\ 
+			\hline
+			Obstacle 1 & 100.0 & 0.0 & 15.0\\			
+			\hline\hline
+			\multicolumn{4}{||c||}{Field 2} \\
+			\hline
+			Target Location  & 550.0 & 0.0 & -\\ 
+			\hline
+			Obstacle 1 & 100.0 & 0.0 & 15.0\\
+			\hline
+			Obstacle 2 & 200.0 & -50.0 & 30.0\\
+			\hline
+			Obstacle 3 & 300.0 & 55.0 & 30.0\\
+			\hline
+			Obstacle 4 & 425.0 & 0.0 & 50.0\\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Obstacle Field Parameters}
+	\label{t:ObstSummary}
 \end{table}
 
-For this paper two obstacle fields were generated. The first contains one large circular obstacle located along the initial heading of the vehicle. The target position is located a large distance behind the single obstacle. Figure~\ref{fig:Obst1} presents this obstacle field. The goal of this test is to analyze the performance of the vehicle and controller around a single obstacle. 
-
-The second obstacle field contains four circular obstacles of varying sizes placed in the vehicle’s initial heading direction. The performance of the vehicle on this obstacle field should allow for understanding of how the controller and vehicle navigate around multiple obstacles in a more realistic scenario. Refer to Fig.~\ref{fig:Obst2}.
-
-The following vehicle parameters are maintained throughout all of the executed tests. A PID speed controller is used to maintain a near constant speed of 8.1 m/s longitudinally for the simulated plant {\CHRONO} wheeled vehicle. This constant speed is enforced in the analytical models internal to the MPC local obstacle avoidance controller. The LIDAR sensor has a maximum range $R_{LIDAR}$ of 129.6 meters and is sampled instantaneously at increments of $2.5^\circ$. The vehicle is limited to a maximum steering angle of $10^\circ$ with a maximum steering rate of  $70.63^{\circ}/s$. 
+The following vehicle parameters are maintained throughout all of the executed tests. A PID speed controller is used to maintain a near constant speed of 8.1 m/s longitudinally for the simulated plant {\CHRONO} wheeled vehicle. This constant speed is also enforced in the analytical models internal to the MPC. The LIDAR sensor has a maximum range $R_{LIDAR} = 129.6~\text{m}$ and is sampled instantaneously at increments of $2.5^\circ$. The vehicle is limited to a maximum steering angle of $10^\circ$, with a maximum steering rate of $70^{\circ}/\text{s}$. 
 
 %% ============================================================
 
@@ -506,24 +510,43 @@ This section summarizes the results of the four tests listed in Table~\ref{t:Tes
 	\centering
 	\begin{subfigure}[b]{\columnwidth}
 		\centering
-		\includegraphics[width=\columnwidth]{Figs/ObstacleField1Trajectories.png}
-		\caption{{\small Trajectories from Tests on Obstacle Field 1}}   
+		\includegraphics[height=\columnwidth]{Figs/ObstacleField1Trajectories.png}
+		\caption{{\small Vehicle trajectories.}}   
 		\label{fig:ObstacleField1Trajectories}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}[b]{\columnwidth}
 		\centering
 		\includegraphics[width=\columnwidth]{Figs/SteeringCommandsField1.png}
-		\caption{\small Steering Commands on Obstacle Field 1}   
+		\caption{\small Steering commands.}   
 		\label{fig:SteeringCommandsField1}
 	\end{subfigure}
-	\caption{\small Trajectories and Steering Data for Obstacle Field 1}
+	\caption{\small Test results on obstacle field 1.}
 	\label{fig:Obst1TestData}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[height=\columnwidth]{Figs/ObstacleField2Trajectories.png}
+		\caption{{\small Vehicle trajectories.}}   
+		\label{fig:ObstacleField2Trajectories}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{\columnwidth}
+		\centering
+		\includegraphics[width=\columnwidth]{Figs/SteeringCommandsField2.png}
+		\caption{\small Steering commands.}   
+		\label{fig:SteeringCommandsField2}
+	\end{subfigure}
+	\caption{\small Test results on obstacle field 2.}
+	\label{fig:Obst2TestData}
 \end{figure}
 
 \begin{table*}
 		\centering
-\begin{tabular}{ ||p{5cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}||  }
+\begin{tabular}{ ||p{6cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}||  }
 		\hline
 		Test Number & 1 & 2 & 3 & 4\\
 		\hline
@@ -537,42 +560,18 @@ This section summarizes the results of the four tests listed in Table~\ref{t:Tes
 		\hline
 		Controller Effort & 0.0340 & 0.0340 & 0.0340 & 0.0306\\
 		\hline
-		Max Lateral Acceleration (m/s$^{2}$)& 2.78 & 1.57 & 2.47 & 2.33 \\
+		Max. Lateral Acceleration (m/s$^{2}$)& 2.78 & 1.57 & 2.47 & 2.33 \\
 		\hline
-		Average Lateral Acceleration (m/s$^{2}$) &0.54 & 0.51 & 0.55 & 0.46\\
+		Avg. Lateral Acceleration (m/s$^{2}$) &0.54 & 0.51 & 0.55 & 0.46\\
 		\hline
 \end{tabular}
 \caption{Test Evaluation Metrics Summary on Obstacle Field 1}
 \label{t:EvalMetricsObst1}
 \end{table*}
 
-
-
-
-
-
-\begin{figure}
-	\centering
-	\begin{subfigure}[b]{\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth]{Figs/ObstacleField2Trajectories.png}
-		\caption{{\small Trajectories from Tests on Obstacle Field 2}}   
-		\label{fig:ObstacleField2Trajectories}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}[b]{\columnwidth}
-		\centering
-		\includegraphics[width=\columnwidth]{Figs/SteeringCommandsField2.png}
-		\caption{\small Steering Commands on Obstacle Field 2}   
-		\label{fig:SteeringCommandsField2}
-	\end{subfigure}
-	\caption{\small Trajectories and Steering Data for Obstacle Field 2}
-	\label{fig:Obst2TestData}
-\end{figure}
-
 \begin{table*}
 		\centering
-\begin{tabular}{ ||p{5cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}||  }
+\begin{tabular}{ ||p{6cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}||  }
 		\hline
 		Test Number & 1 & 2 & 3 & 4\\
 		\hline
@@ -586,18 +585,26 @@ This section summarizes the results of the four tests listed in Table~\ref{t:Tes
 		\hline
 		Controller Effort & 0.0510 & 0.0680 & 0.0714 & 0.0612\\
 		\hline
-		Max Lateral Acceleration (m/s$^{2}$)& 2.92 & 2.51 & 2.55 & 2.45 \\
+		Max. Lateral Acceleration (m/s$^{2}$)& 2.92 & 2.51 & 2.55 & 2.45 \\
 		\hline
-		Average Lateral Acceleration (m/s$^{2}$) & 0.41 & 0.43 & 0.53 & 0.58\\
+		Avg. Lateral Acceleration (m/s$^{2}$) & 0.41 & 0.43 & 0.53 & 0.58\\
 		\hline
 \end{tabular}
-\caption{Test Evaluation Metrics Summary on Obstacle Field 2}
+\caption{Test Evaluation Metrics Summary on Obstacle Field 2.}
 \label{t:EvalMetricsObst2}
 \end{table*}
 
-The trajectories for the four performed tests are presented in Fig. \ref{fig:ObstacleField1Trajectories} on Obstacle Field 1 and Fig. \ref{fig:ObstacleField2Trajectories}  on Obstacle Field 2 and their associated steering commands generated by the controller are presented in Fig. \ref{fig:SteeringCommandsField1} and \ref{fig:SteeringCommandsField2}. Just from looking at the trajectories of the vehicles, several observations can be made. The controlled vehicle in each test successfully maneuvers around the single obstacle in Obstacle Field 1. From this we can see as has been proven in~\cite{ModelFidelity2016} that even though the 2-DOF yaw plane vehicle model lacks the complexity and fidelity of the 14-DOF model, it can still safely navigate a vehicle successfully through an obstacle field while moving at a non-extreme speed. The evaluation metrics for each test as defined in Section~\ref{ss:Metrics} are tabulated for the runs on each obstacle field. The evaluation metrics for the runs on Obstacle Field 1 are presented in Table~\ref{t:EvalMetricsObst1} and for Obstacle Field 2 in Table~\ref{t:EvalMetricsObst2}. 
+The trajectories for the four performed tests are presented in Figs.~\ref{fig:ObstacleField1Trajectories} and \ref{fig:ObstacleField2Trajectories}, for obstacle fields 1 and 2, respectively. The associated steering commands generated by the controller are presented in Figs.~\ref{fig:SteeringCommandsField1} and \ref{fig:SteeringCommandsField2}. 
+%%
+Just from looking at the trajectories of the vehicles, several observations can be made. The controlled vehicle in each test successfully maneuvers around the single obstacle in Obstacle Field 1. 
+%%
+This confirms the findings in~\cite{ModelFidelity2016} that, even though it lacks the fidelity of the 14-DOF model, the 2-DOF yaw plane model can still successfully navigate a vehicle through an obstacle field while moving at a non-extreme speed. 
+%%
+The evaluation metrics for each test, as defined in Section~\ref{ss:Metrics}, are tabulated for each obstacle field in Tables~\ref{t:EvalMetricsObst1} and \ref{t:EvalMetricsObst2}. 
 
-Comparing the results of Test 1 and Test 2, we are able to examine the performance differences that occur when a 2-DOF internal vehicle model is used within the controller to control the {\CHRONO} vehicle as opposed to the higher fidelity 14-DOF internal vehicle model used in the controller in Test 2. On both Obstacle Field 1 and 2, the controllers that use the 14-DOF internal vehicle model to predict vehicle states guides the {\CHRONO} vehicle to the goal quicker than the controllers with the internal 2-DOF vehicle model. However, in each of these instances the time difference is slim. At most in these tests a controller using the 14-DOF internal vehicle reaches the target 2.2 seconds faster than the 2DOF controller tests. So in this regard the 14-DOF controllers perform marginally better than the 2-DOF controllers. One area the 2-DOF controller model of Test 1 performs better than the 14-DOF model of Test 2 is in the minimum Obstacle Distance metric. In all the cases, the controllers with the 2-DOF internal vehicle model guided the vehicle closer to the obstacles than the controllers with the 14-DOF models. This is a desirable characteristic in that the 2-DOF controllers are taking more advantage of the controlled vehicle's dynamic capabilities when navigating around obstacles. Comparing the controller effort between Tests 1 and 2, on Obstacle Field 1 the controller effort is actually the same. The 2-DOF controller does input more command changes than the 14-DOF controller. On Obstacle Field 2, the 14-DOF controller of Test 2 actually has a higher controller effort value than the 2-DOF controller by 0.0170. This may however be due to the controller's decision to move left around the last obstacle instead of continuing straight around the right side of the obstacle as the 2-DOF controller commands. Finally looking at the maximum and average lateral accelerations between Tests 1 and 2, regarding both of these metrics  the 14-DOF controller performs better than the 2-DOF controller on rigid terrain. Overall looking at all these metrics, on rigid terrain the 14-DOF controller performs marginally better than the 2-DOF controller. However considering the 14-DOF takes much longer to run and the fact that realtime implementation of a model predictive controller with internal 14-DOF vehicle model would be less feasible, the 2-DOF is suitable for use in an MPC local obstacle avoidance controller for a vehicle on rigid ground terrain traveling at non-extreme speeds. The performance drop is slight switching to the 2-DOF vehicle model, but can still safely navigate the vehicle around an obstacle field to an end goal. These results support the findings and conclusions of~\cite{ModelFidelity2016} on a different AGV. 
+\todo[inline]{(Radu) Got here...}
+
+Comparing the results of tests 1 and 2, we are able to examine the performance differences that occur when a 2-DOF internal vehicle model is used within the controller to control the {\CHRONO} vehicle as opposed to the higher fidelity 14-DOF internal vehicle model used in the controller in Test 2. On both Obstacle Field 1 and 2, the controllers that use the 14-DOF internal vehicle model to predict vehicle states guides the {\CHRONO} vehicle to the goal quicker than the controllers with the internal 2-DOF vehicle model. However, in each of these instances the time difference is slim. At most in these tests a controller using the 14-DOF internal vehicle reaches the target 2.2 seconds faster than the 2DOF controller tests. So in this regard the 14-DOF controllers perform marginally better than the 2-DOF controllers. One area the 2-DOF controller model of Test 1 performs better than the 14-DOF model of Test 2 is in the minimum Obstacle Distance metric. In all the cases, the controllers with the 2-DOF internal vehicle model guided the vehicle closer to the obstacles than the controllers with the 14-DOF models. This is a desirable characteristic in that the 2-DOF controllers are taking more advantage of the controlled vehicle's dynamic capabilities when navigating around obstacles. Comparing the controller effort between Tests 1 and 2, on Obstacle Field 1 the controller effort is actually the same. The 2-DOF controller does input more command changes than the 14-DOF controller. On Obstacle Field 2, the 14-DOF controller of Test 2 actually has a higher controller effort value than the 2-DOF controller by 0.0170. This may however be due to the controller's decision to move left around the last obstacle instead of continuing straight around the right side of the obstacle as the 2-DOF controller commands. Finally looking at the maximum and average lateral accelerations between Tests 1 and 2, regarding both of these metrics  the 14-DOF controller performs better than the 2-DOF controller on rigid terrain. Overall looking at all these metrics, on rigid terrain the 14-DOF controller performs marginally better than the 2-DOF controller. However considering the 14-DOF takes much longer to run and the fact that realtime implementation of a model predictive controller with internal 14-DOF vehicle model would be less feasible, the 2-DOF is suitable for use in an MPC local obstacle avoidance controller for a vehicle on rigid ground terrain traveling at non-extreme speeds. The performance drop is slight switching to the 2-DOF vehicle model, but can still safely navigate the vehicle around an obstacle field to an end goal. These results support the findings and conclusions of~\cite{ModelFidelity2016} on a different AGV. 
 
 The same set of comparisons are made between the 2-DOF controller and the 14-DOF controller but now on granular terrain in Tests 3 and 4. Similar to rigid ground, the 14-DOF controller navigates the {\CHRONO} vehicle to the specified end goal quicker than the 2-DOF controller at most by 1.94 seconds. Again though, this time difference is marginal so even though the 14-DOF controller performs better than the 2-DOF controller regarding time to target, this does not mean at all that the 2-DOF controller performs poorly. On Obstacle Field 1 and Obstacle Field 2, the 2-DOF controller guides the vehicle closer to obstacles on granular terrain than the 14-DOF controllers. The 14-DOF controller has a lower controller effort value than the compared 2-DOF controller on granular terrain in Tests 3 and 4. Finally looking at the maximum and average lateral accelerations between Tests 3 and 4, on Obstacle Field 1 the 2-DOF has a higher maximum lateral acceleration and average lateral acceleration. On Obstacle Field 2 the 2-DOF controller results in a lower maximum lateral acceleration and average lateral acceleration than the 14-DOF controller of Test 4 on granular terrain. Overall looking at the previously mentioned metrics, the 14-DOF controller again performs marginally better than the 2-DOF controller on granular terrain. Even though the 2DOF and 14DOF internal vehicle models were derived using rigid ground assumptions, they are still capable of successfully navigating the {\CHRONO} vehicle through an obstacle field safely on certain granuler media. The same conclusion from this comparison can be made as from comparing Tests 1 and 2. Though vehicle performance marginally drops when using the 2-DOF controller, realistically the software benefits of using the 2-DOF controller outweigh the slight performance drop seen by this study at non-extreme vehicle speeds.
 
