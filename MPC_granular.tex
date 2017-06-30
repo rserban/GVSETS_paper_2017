@@ -23,8 +23,12 @@
 \usepackage{empheq}
 \usepackage{hyperref}
 \usepackage{sectsty}
-
 \usepackage{morefloats}
+
+\hypersetup{
+	colorlinks=false,
+	pdfborder={0 0 0},
+}
 
 % Packages for notes, testing, etc.
 \usepackage{todonotes}
@@ -168,7 +172,7 @@ The remainder of this paper is organized as follows.  In Section~\ref{s:backgrou
 
 \begin{figure*}
 	\centering
-	\includegraphics[width=0.6\textwidth]{Figs/MPCBlockDiagram.png}
+	\includegraphics[width=0.75\textwidth]{Figs/MPCBlockDiagram.png}
 	\caption{{\small Schematic of MPC LIDAR-Based Constant Speed Local Obstacle Avoidance Controller}}    
 	\label{fig:MPC_schematic}
 \end{figure*}
@@ -608,8 +612,7 @@ Assessing the effect of internal vehicle model fidelity on controller performanc
 \item the 14-DOF model leads to marginally faster travel to the target location;
 \item the 2-DOF model leads to trajectories with lower obstacle clearance;
 \item the two models result in the same controller effort on the first obstacle course; however, the higher-fidelity 14-DOF model requires 33\% more controller effort on the second obstacle course, a consequence of its decision of performing a course change to negotiate the last obstacle;
-\item the lower fidelity 2-DOF model inputs more command changes while negotiating obstacle course 1;
-\todo[inline]{Is this really true?  I'm not sure I get this from Fig.~\ref{fig:SteeringCommandsField1}}
+\item the two models result in approximately the same number of command changes on both obstacle courses;
 \item the 14-DOF model results in lower maximum lateral accelerations.
 \end{itemize}
 %
@@ -641,22 +644,16 @@ The 2-DOF and 14-DOF internal vehicle models were derived using rigid ground ass
 Turning next to evaluating the 14-DOF internal controller model when navigating on rigid versus granular terrain (comparison of tests 2 and 4), we draw the following conclusions:
 \begin{itemize}
 \item on both obstacle courses, the target can be reached faster when navigating on rigid terrain;
-\item the resulting trajectories are closer to the obstacles when navigating on granular terrain
-\todo[inline]{Is this really true?!?!  Doesn't seem so from the figures!}
+\item the resulting trajectories are slightly closer to the obstacles when navigating on granular terrain;
 \item the required controller effort is lower when navigating on granular terrain;
-\todo[inline]{This seems surprising.  Deserves an explanation!}
-\item the maximum lateral accelerations are similar on both types of terrain
-\todo[inline]{Is this really true?!?! Doesn't seem so from the tables!}
+\item the maximum lateral accelerations are similar on both types of terrain.
 \end{itemize}
 
 %Comparing Tests 2 and 4, the controller used is the 14-DOF controller so we can analyze performance differences between navigating on rigid ground versus granular terrain. In all cases the time to target is lower on rigid ground tests than on granular tests. In Test 4, the vehicle navigates much closer to any obstacle than in Test 2 on rigid ground. 
 %
 %On granular terrain, the controller effort is lower than on rigid ground. Comparing the lateral acceleration metrics of Tests 2 and 4 yield no discernable conclusions since neither is significantly nor consistently larger than the other. 
 
-Similar conclusions can be reached comparing the performance of the 2-DOF model when used to control a vehicle on either rigid or granular terrain (comparison of tests 1 and 3). On rigid ground, the 2-DOF controller does a better job of approaching the obstacles more closely. 
-\todo[inline]{But that is different from what was said for the 14-DOF model.  How are then the conclusion 'similar'?!?!}
-The controller effort on rigid terrain (test 1) is lower than that required on granular terrain (test 3).
-\todo[inline]{Again, this is different than what we see for the 14-DOF model!}
+A similar analysis can be performed on the 2-DOF model when used to control a vehicle on either rigid or granular terrain (comparison of tests 1 and 3). Unlike the 14-DOF model, the simpler 2-DOF model does a better job of approaching the obstacles more closely when controlling a vehicle on rigid rather than on granular terrain. Related to this, the controller effort on rigid terrain (test 1) is lower than that required on granular terrain (test 3).
 
 The forces the vehicle experiences from driving on granular terrain can be much different than forces on simple rigid ground. Examining Figs.~\ref{fig:ObstacleField1Trajectories} and \ref{fig:ObstacleField2Trajectories}, the vehicle navigating on granular terrain does not turn as sharply for a given steering command as the vehicle does on rigid ground terrain. To understand the different behavior between a vehicle driving on rigid and granular terrain, a parametric study should be performed analyzing the vehicle driving on a variety of granular terrains with different granular parameters. 
 
